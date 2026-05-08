@@ -83,7 +83,7 @@ export async function POST(request: Request) {
         { 
           error: "supabase_storage_upload_failed", 
           details: storageError.message,
-          code: (storageError as any).code,
+          code: (storageError as unknown as Record<string, unknown>).code as string | undefined,
         },
         { status: 500 },
       );
