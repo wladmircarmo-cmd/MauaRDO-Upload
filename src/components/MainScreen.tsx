@@ -16,14 +16,17 @@ export function MainScreen() {
   const [wbs, setWbs] = useState<string>("");
   const [description, setDescription] = useState<string>("");
   const [cc, setCc] = useState<string>("");
+  const [ccOptions, setCcOptions] = useState<{cc: string, descriçãocc: string}[]>([]);
   const [os, setOs] = useState<string>("");
+  const [osOptions, setOsOptions] = useState<string[]>([]);
   const [date, setDate] = useState<string>(new Date().toISOString().split("T")[0]);
-  const [wbsList, setWbsList] = useState<WbsEntry[]>([]);
-  const [wbsLoading, setWbsLoading] = useState(true);
+  const [wbsList, setWbsList] = useState<{wbs: string, subtask?: string}[]>([]);
+  const [wbsLoading, setWbsLoading] = useState(false);
   const [wbsError, setWbsError] = useState<string | null>(null);
   const [files, setFiles] = useState<File[]>([]);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [status, setStatus] = useState<Status>({ kind: "idle" });
+  const [optionsLoading, setOptionsLoading] = useState(true);
 
   useEffect(() => {
     if (files.length === 0) {
@@ -36,46 +39,56 @@ export function MainScreen() {
   }, [files]);
 
 
+  // Load CC and OS options
   useEffect(() => {
-    async function loadWbs() {
+    async function loadOptions() {
       try {
-        const response = await fetch("/api/wbs");
-        if (!response.ok) {
-          throw new Error("Falha ao carregar lista de WBS.");
-        }
-        const json = await response.json();
-        const list = Array.isArray(json.wbs) ? json.wbs : [];
-        const entries: WbsEntry[] = list.map((item: unknown) => {
-          if (typeof item === "string") {
-            return { wbs: item };
-          }
-
-          if (typeof item === "object" && item !== null && "wbs" in item) {
-            const entry = item as { wbs: unknown; parent_task_path?: unknown };
-            return {
-              wbs: String(entry.wbs),
-              parent_task_path:
-                typeof entry.parent_task_path === "string"
-                  ? entry.parent_task_path
-                  : undefined,
-            };
-          }
-
-          return { wbs: String(item) };
-        });
-        setWbsList(entries);
-        if (entries.length > 0) {
-          setWbs(entries[0].wbs);
-        }
+        const response = await fetch("/api/options");
+        if (!response.ok) throw new Error("Falha ao carregar opções.");
+        const data = await response.json();
+        setCcOptions(data.ccs || []);
+        setOsOptions(data.oss || []);
+        if (data.ccs?.length > 0) setCc(data.ccs[0].cc);
+        if (data.oss?.length > 0) setOs(data.oss[0]);
       } catch (error) {
-        setWbsError(error instanceof Error ? error.message : String(error));
+        console.error("Error loading options:", error);
+      } finally {
+        setOptionsLoading(false);
+      }
+    }
+    loadOptions();
+  }, []);
+
+  // Load Tasks (WBS) when OS changes
+  useEffect(() => {
+    if (!os) return;
+
+    async function loadTasks() {
+      setWbsLoading(true);
+      setWbsError(null);
+      try {
+        const response = await fetch(`/api/options/tasks?os=${os}`);
+        if (!response.ok) throw new Error("Falha ao carregar tarefas.");
+        const tasks = await response.json();
+        const formattedTasks = tasks.map((t: any) => ({
+          wbs: t.WBS,
+          subtask: t.Subtask
+        }));
+        setWbsList(formattedTasks);
+        if (formattedTasks.length > 0) {
+          setWbs(formattedTasks[0].wbs);
+        } else {
+          setWbs("");
+        }
+      } catch (error: any) {
+        setWbsError(error.message);
       } finally {
         setWbsLoading(false);
       }
     }
 
-    loadWbs();
-  }, []);
+    loadTasks();
+  }, [os]);
 
   const onDrop = useCallback((accepted: File[]) => {
     setFiles((prev) => {
@@ -223,13 +236,21 @@ export function MainScreen() {
         <section className="grid grid-cols-2 gap-4 rounded-2xl border border-zinc-800 bg-zinc-950/60 p-5">
           <div className="flex flex-col gap-2">
             <label className="text-sm font-medium text-zinc-200">CC (Centro de Custo)</label>
-            <input
-              type="text"
+            <select
               value={cc}
               onChange={(e) => setCc(e.target.value)}
-              placeholder="Ex: 1234"
               className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 outline-none focus:border-[#2868A0]"
-            />
+            >
+              {optionsLoading ? (
+                <option>Carregando...</option>
+              ) : (
+                ccOptions.map((item) => (
+                  <option key={item.cc} value={item.cc}>
+                    {item.cc} - {item.descriçãocc}
+                  </option>
+                ))
+              )}
+            </select>
           </div>
           <div className="flex flex-col gap-2">
             <label className="text-sm font-medium text-zinc-200">DATA</label>
@@ -244,13 +265,21 @@ export function MainScreen() {
 
         <section className="rounded-2xl border border-zinc-800 bg-zinc-950/60 p-5">
           <label className="text-sm font-medium text-zinc-200">OS (Ordem de Serviço)</label>
-          <input
-            type="text"
+          <select
             value={os}
             onChange={(e) => setOs(e.target.value)}
-            placeholder="Ex: OS-999"
             className="mt-2 w-full rounded-xl border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 outline-none focus:border-[#2868A0]"
-          />
+          >
+            {optionsLoading ? (
+              <option>Carregando...</option>
+            ) : (
+              osOptions.map((item) => (
+                <option key={item} value={item}>
+                  {item}
+                </option>
+              ))
+            )}
+          </select>
         </section>
 
         <section className="rounded-2xl border border-zinc-800 bg-zinc-950/60 p-5">
@@ -262,16 +291,15 @@ export function MainScreen() {
             className="mt-2 w-full rounded-xl border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 outline-none focus:border-[#2868A0] disabled:cursor-not-allowed disabled:opacity-60"
           >
             {wbsLoading ? (
-              <option>Carregando WBS...</option>
+              <option>Carregando tarefas...</option>
             ) : wbsList.length > 0 ? (
               wbsList.map((entry) => (
                 <option key={entry.wbs} value={entry.wbs}>
-                  {entry.wbs}
-                  {entry.parent_task_path ? ` - ${entry.parent_task_path}` : ""}
+                  {entry.wbs} - {entry.subtask || "Sem descrição"}
                 </option>
               ))
             ) : (
-              <option>Nenhuma WBS disponível</option>
+              <option>Nenhuma tarefa encontrada para esta OS</option>
             )}
           </select>
           {wbsError ? (
