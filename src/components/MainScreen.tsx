@@ -4,7 +4,6 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import imageCompression from "browser-image-compression";
 import { MAX_IMAGE_BYTES, normalizeWbs } from "@/lib/upload/validation";
-import type { WbsEntry } from "@/lib/wbs";
 
 type Status =
   | { kind: "idle" }
@@ -70,7 +69,7 @@ export function MainScreen() {
         const response = await fetch(`/api/options/tasks?os=${os}`);
         if (!response.ok) throw new Error("Falha ao carregar tarefas.");
         const tasks = await response.json();
-        const formattedTasks = tasks.map((t: any) => ({
+        const formattedTasks = tasks.map((t: { WBS: string, Subtask: string }) => ({
           wbs: t.WBS,
           subtask: t.Subtask
         }));
@@ -80,8 +79,8 @@ export function MainScreen() {
         } else {
           setWbs("");
         }
-      } catch (error: any) {
-        setWbsError(error.message);
+      } catch (error: unknown) {
+        setWbsError(error instanceof Error ? error.message : String(error));
       } finally {
         setWbsLoading(false);
       }
