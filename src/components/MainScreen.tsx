@@ -340,9 +340,7 @@ export function MainScreen() {
             ].join(" ")}
           >
             <input
-              {...getInputProps({
-                capture: "environment",
-              })}
+              {...getInputProps()}
             />
 
             <div className="flex flex-col gap-3">
