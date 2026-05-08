@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import imageCompression from "browser-image-compression";
 import { MAX_IMAGE_BYTES, normalizeWbs } from "@/lib/upload/validation";
@@ -26,6 +26,9 @@ export function MainScreen() {
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [status, setStatus] = useState<Status>({ kind: "idle" });
   const [optionsLoading, setOptionsLoading] = useState(true);
+
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (files.length === 0) {
@@ -96,11 +99,19 @@ export function MainScreen() {
     });
   }, []);
 
+  const handleManualSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      onDrop(Array.from(e.target.files));
+    }
+    // Clear input so same file can be selected again
+    e.target.value = "";
+  }, [onDrop]);
+
   const removeFile = useCallback((index: number) => {
     setFiles((prev) => prev.filter((_, i) => i !== index));
   }, []);
 
-  const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     multiple: true,
     maxFiles: 4,
@@ -321,34 +332,63 @@ export function MainScreen() {
           />
         </section>
 <section className="rounded-2xl border border-zinc-800 bg-zinc-950/60 p-5">
-          <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-zinc-200">IMAGEM</p>
-            <button
-              type="button"
-              onClick={open}
-              className="rounded-lg border border-zinc-700 px-3 py-1.5 text-xs font-semibold text-zinc-200 hover:bg-zinc-900"
-            >
-              Selecionar arquivo
-            </button>
+          <div className="flex items-center justify-between mb-4">
+            <p className="text-sm font-medium text-zinc-200 uppercase tracking-wider">Imagens</p>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => cameraInputRef.current?.click()}
+                className="flex items-center gap-2 rounded-xl bg-zinc-900 border border-zinc-700 px-4 py-2 text-xs font-bold text-zinc-100 hover:bg-zinc-800 transition active:scale-95"
+              >
+                📸 Câmera
+              </button>
+              <button
+                type="button"
+                onClick={() => galleryInputRef.current?.click()}
+                className="flex items-center gap-2 rounded-xl bg-zinc-900 border border-zinc-700 px-4 py-2 text-xs font-bold text-zinc-100 hover:bg-zinc-800 transition active:scale-95"
+              >
+                🖼️ Galeria
+              </button>
+            </div>
           </div>
+
+          {/* Hidden Inputs */}
+          <input
+            type="file"
+            accept="image/*"
+            capture="environment"
+            className="hidden"
+            ref={cameraInputRef}
+            onChange={handleManualSelect}
+          />
+          <input
+            type="file"
+            accept="image/*"
+            multiple
+            className="hidden"
+            ref={galleryInputRef}
+            onChange={handleManualSelect}
+          />
 
           <div
             {...getRootProps()}
             className={[
-              "mt-3 rounded-2xl border border-dashed p-4 transition",
-              isDragActive ? "border-[#2868A0] bg-[#2868A0]/10" : "border-zinc-700",
+              "rounded-2xl border border-dashed p-6 transition-all duration-300",
+              isDragActive ? "border-[#2868A0] bg-[#2868A0]/10 scale-[1.02]" : "border-zinc-800 bg-zinc-900/20",
             ].join(" ")}
           >
-            <input
-              {...getInputProps()}
-            />
+            <input {...getInputProps()} />
 
-            <div className="flex flex-col gap-3">
-              <div className="text-sm text-zinc-300">
-                <span className="font-semibold text-zinc-100">
-                  Arraste e solte
-                </span>{" "}
-                ou use o botão acima (no celular abre a câmera).
+            <div className="flex flex-col items-center gap-4 py-4">
+              <div className="text-sm text-zinc-400 text-center">
+                {isDragActive ? (
+                  <span className="text-[#2868A0] font-bold">Solte as imagens aqui</span>
+                ) : (
+                  <>
+                    <p className="text-zinc-200 font-medium mb-1">Arraste fotos aqui</p>
+                    <p className="text-xs text-zinc-500">ou use os botões acima</p>
+                  </>
+                )}
               </div>
 
               {previewUrls.length > 0 ? (
