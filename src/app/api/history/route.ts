@@ -47,7 +47,7 @@ export async function GET(request: Request) {
     // Group activities by OS + Date + CC
     const groupedMap = new Map<string, HistoryGroup>();
 
-    (data || []).forEach((item: any) => {
+    (data || []).forEach((item: Record<string, any>) => {
       const osData = Array.isArray(item.rdo_os) ? item.rdo_os[0] : item.rdo_os;
       const rdoData = osData && Array.isArray(osData.rdo) ? osData.rdo[0] : osData?.rdo;
       

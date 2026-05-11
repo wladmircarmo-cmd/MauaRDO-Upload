@@ -171,7 +171,6 @@ export function MainScreen() {
     accept: { "image/*": [] },
   });
 
-  const normalizedWbs = useMemo(() => normalizeWbs(wbs), [wbs]);
 
   const compressInBrowser = useCallback(async (input: File) => {
     const compressed = await imageCompression(input, {
