@@ -3,11 +3,9 @@ import { z } from "zod";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import {
   assertValidFile,
-  assertWbsExists,
   normalizeWbs,
   uploadSchema,
 } from "@/lib/upload/validation";
-import { compressAndNormalizeImage } from "@/lib/upload/image";
 
 export const runtime = "nodejs";
 

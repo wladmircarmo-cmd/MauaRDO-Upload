@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import imageCompression from "browser-image-compression";
-import { MAX_IMAGE_BYTES, normalizeWbs } from "@/lib/upload/validation";
+import { normalizeWbs } from "@/lib/upload/validation";
 
 type Status =
   | { kind: "idle" }
@@ -45,7 +45,6 @@ export function MainScreen() {
   const [date, setDate] = useState<string>(new Date().toISOString().split("T")[0]);
   const [wbsList, setWbsList] = useState<{ wbs: string, subtask?: string, os?: string }[]>([]);
   const [wbsLoading, setWbsLoading] = useState(false);
-  const [wbsError, setWbsError] = useState<string | null>(null);
   const [files, setFiles] = useState<File[]>([]);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [status, setStatus] = useState<Status>({ kind: "idle" });
@@ -257,7 +256,6 @@ export function MainScreen() {
     description,
     files,
     fetchHistory,
-    normalizedWbs,
     wbs,
     cc,
     os,
@@ -404,13 +402,9 @@ export function MainScreen() {
               <option>Nenhuma tarefa encontrada para esta OS</option>
             )}
           </select>
-          {wbsError ? (
-            <p className="mt-2 text-xs text-rose-300">{wbsError}</p>
-          ) : (
-            <p className="mt-2 text-xs text-zinc-400">
-              Será salvo como: <span className="text-zinc-200">{normalizedWbs}</span>
-            </p>
-          )}
+          <p className="mt-2 text-xs text-zinc-400">
+            Será salvo como: <span className="text-zinc-200">{normalizeWbs(wbs)}</span>
+          </p>
         </section>
 
         <section className={`rounded-2xl border p-5 transition-colors ${isDarkMode ? "border-zinc-800 bg-zinc-950/60" : "border-zinc-200 bg-white shadow-sm"}`}>
@@ -591,7 +585,7 @@ export function MainScreen() {
                   </div>
                   
                   <div className="flex flex-col gap-1">
-                    {item.rdo_atividades?.map((atv: any, idx: number) => (
+                    {item.rdo_atividades?.map((atv, idx) => (
                       <div key={idx} className="flex gap-2 items-baseline justify-between">
                         <div className="flex gap-2 items-baseline overflow-hidden">
                           <span className="text-[10px] font-mono text-[#2868A0] font-bold shrink-0">{atv.wbs}</span>

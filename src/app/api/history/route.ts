@@ -35,8 +35,17 @@ export async function GET(request: Request) {
       throw error;
     }
 
+    interface HistoryGroup {
+      id: string;
+      data: string;
+      cc: string;
+      os: string;
+      atividades: { wbs: string; descricao: string; fotos: number }[];
+      totalFotos: number;
+    }
+
     // Group activities by OS + Date + CC
-    const groupedMap = new Map<string, any>();
+    const groupedMap = new Map<string, HistoryGroup>();
 
     (data || []).forEach((item: any) => {
       const osData = Array.isArray(item.rdo_os) ? item.rdo_os[0] : item.rdo_os;
@@ -58,10 +67,11 @@ export async function GET(request: Request) {
       }
 
       const group = groupedMap.get(groupKey);
+      if (!group) return;
       
       // Check if this specific task (WBS + Comment) already exists in this group
       const ativKey = `${item.tarefa}-${item.comentario || ""}`;
-      let existingAtiv = group.atividades.find((a: any) => `${a.wbs}-${a.descricao}` === ativKey);
+      const existingAtiv = group.atividades.find((a) => `${a.wbs}-${a.descricao}` === ativKey);
       
       const fotoCount = item.rdo_imagens?.length || 0;
       
