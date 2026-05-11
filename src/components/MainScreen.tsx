@@ -559,7 +559,7 @@ export function MainScreen() {
               Lançamentos Recentes
             </h2>
             <button 
-              onClick={fetchHistory}
+              onClick={() => fetchHistory(1)}
               disabled={historyLoading}
               className={`text-[10px] uppercase font-bold tracking-widest hover:underline disabled:opacity-50 ${isDarkMode ? "text-zinc-500" : "text-zinc-400"}`}
             >
