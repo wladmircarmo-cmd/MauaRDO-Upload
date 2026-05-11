@@ -11,6 +11,15 @@ type Status =
   | { kind: "success"; message: string }
   | { kind: "error"; message: string };
 
+interface HistoryItem {
+  id: string;
+  data: string;
+  cc: string;
+  os: string;
+  rdo_atividades: { wbs: string; descricao: string }[];
+  rdo_imagens: { count: number }[];
+}
+
 const SunIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
 );
@@ -42,6 +51,8 @@ export function MainScreen() {
   const [status, setStatus] = useState<Status>({ kind: "idle" });
   const [optionsLoading, setOptionsLoading] = useState(true);
   const [isDarkMode, setIsDarkMode] = useState(true);
+  const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
 
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
@@ -71,7 +82,23 @@ export function MainScreen() {
   }, [files]);
 
 
-  // Load initial options (CC and all Tasks)
+  // Load History
+  const fetchHistory = useCallback(async () => {
+    setHistoryLoading(true);
+    try {
+      const res = await fetch("/api/history");
+      if (res.ok) {
+        const data = await res.json();
+        setHistory(data);
+      }
+    } catch (error) {
+      console.error("Error fetching history:", error);
+    } finally {
+      setHistoryLoading(false);
+    }
+  }, []);
+
+  // Load initial options (CC and all Tasks) and History
   useEffect(() => {
     async function init() {
       try {
@@ -100,6 +127,9 @@ export function MainScreen() {
             setOs(formattedTasks[0].os || "");
           }
         }
+
+        // Fetch History
+        fetchHistory();
       } catch (error) {
         console.error("Error initializing options:", error);
       } finally {
@@ -108,7 +138,7 @@ export function MainScreen() {
       }
     }
     init();
-  }, []);
+  }, [fetchHistory]);
 
 
   const onDrop = useCallback((accepted: File[]) => {
@@ -202,6 +232,7 @@ export function MainScreen() {
       });
       setFiles([]);
       setDescription("");
+      fetchHistory();
     } catch (error) {
       setStatus({ kind: "error", message: String(error) });
     }
@@ -209,6 +240,7 @@ export function MainScreen() {
     compressInBrowser,
     description,
     files,
+    fetchHistory,
     normalizedWbs,
     wbs,
     cc,
@@ -484,21 +516,75 @@ export function MainScreen() {
             disabled={status.kind === "loading"}
             className="rounded-2xl bg-[#2868A0] px-5 py-3 text-sm font-semibold text-white hover:bg-[#1f5f8c] disabled:opacity-60"
           >
-            {status.kind === "loading" ? status.message : "Enviar imagem"}
+            {status.kind === "loading" ? status.message : "Enviar RDO"}
           </button>
 
-          {status.kind !== "idle" && status.kind !== "loading" ? (
+          {status.kind !== "idle" && status.kind !== "loading" && (
             <div
-              className={[
-                "rounded-xl border px-4 py-3 text-sm",
+              className={`rounded-xl border px-4 py-3 text-sm transition-all ${
                 status.kind === "success"
-                  ? "border-[#2868A0]/60 bg-[#2868A0]/10 text-white"
-                  : "border-[#F08838]/60 bg-[#F08838]/10 text-[#F08838]",
-              ].join(" ")}
+                  ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-500"
+                  : "border-rose-500/50 bg-rose-500/10 text-rose-500"
+              }`}
             >
               {status.message}
             </div>
-          ) : null}
+          )}
+        </section>
+
+        <section className={`rounded-2xl border p-5 transition-colors ${isDarkMode ? "border-zinc-800 bg-zinc-950/60" : "border-zinc-200 bg-white shadow-sm"}`}>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className={`text-sm font-medium uppercase tracking-wider ${isDarkMode ? "text-zinc-200" : "text-zinc-700"}`}>
+              Lançamentos Recentes
+            </h2>
+            <button 
+              onClick={fetchHistory}
+              disabled={historyLoading}
+              className={`text-[10px] uppercase font-bold tracking-widest hover:underline disabled:opacity-50 ${isDarkMode ? "text-zinc-500" : "text-zinc-400"}`}
+            >
+              {historyLoading ? "Atualizando..." : "Atualizar"}
+            </button>
+          </div>
+
+          <div className="flex flex-col gap-3">
+            {history.length === 0 && !historyLoading ? (
+              <p className={`text-xs text-center py-4 ${isDarkMode ? "text-zinc-500" : "text-zinc-400"}`}>
+                Nenhum lançamento encontrado
+              </p>
+            ) : (
+              history.map((item) => (
+                <div 
+                  key={item.id} 
+                  className={`flex flex-col gap-2 rounded-xl border p-3 transition-all ${
+                    isDarkMode ? "bg-zinc-900/40 border-zinc-800" : "bg-zinc-50 border-zinc-100 shadow-sm"
+                  }`}
+                >
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className={`text-xs font-bold ${isDarkMode ? "text-zinc-300" : "text-zinc-800"}`}>
+                        OS {item.os}
+                      </p>
+                      <p className="text-[10px] text-zinc-500">
+                        {new Date(item.data).toLocaleDateString('pt-BR')} • CC {item.cc}
+                      </p>
+                    </div>
+                    <div className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${isDarkMode ? "bg-zinc-800 text-zinc-400" : "bg-white text-zinc-500 border border-zinc-100"}`}>
+                      {item.rdo_imagens?.[0]?.count || 0} FOTOS
+                    </div>
+                  </div>
+                  
+                  <div className="flex flex-col gap-1">
+                    {item.rdo_atividades?.map((atv, idx) => (
+                      <div key={idx} className="flex gap-2 items-baseline">
+                        <span className="text-[10px] font-mono text-[#2868A0] font-bold">{atv.wbs}</span>
+                        <span className={`text-[11px] truncate ${isDarkMode ? "text-zinc-400" : "text-zinc-600"}`}>{atv.descricao}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
         </section>
 
         <footer className="pt-2 text-center text-xs text-zinc-500">
