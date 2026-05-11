@@ -66,42 +66,48 @@ export default function LoginPage() {
         </button>
       </div>
 
-      <div className="w-full max-w-sm space-y-8 text-center">
-        <div className="space-y-2">
-          <div className="mx-auto flex h-32 w-auto items-center justify-center">
+      <div className="w-full max-w-2xl space-y-16 text-center">
+        <div className="space-y-8">
+          <div className="mx-auto flex h-64 w-auto items-center justify-center">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img 
               src="/images/logo.png" 
               alt="Logo Mauá" 
-              className={`h-32 w-auto object-contain rounded-xl border transition-all shadow-xl ${
-                isDarkMode ? "border-zinc-800 shadow-blue-500/5" : "border-zinc-200 shadow-zinc-200/50"
+              className={`h-64 w-auto object-contain rounded-[2rem] border transition-all shadow-2xl ${
+                isDarkMode ? "border-zinc-800 shadow-blue-500/10" : "border-zinc-200 shadow-zinc-200/50"
               }`}
             />
           </div>
-          <h1 className="text-3xl font-bold tracking-tight">Mauá RDO</h1>
-          <p className="text-zinc-400">Sistema de Upload de Fotos para RDO</p>
+          <div className="space-y-4">
+            <h1 className="text-6xl font-black tracking-tighter uppercase">Mauá RDO</h1>
+            <p className={`text-2xl font-semibold ${isDarkMode ? "text-zinc-400" : "text-zinc-500"}`}>
+              Sistema de Upload de Fotos para RDO
+            </p>
+          </div>
         </div>
 
         <button
           onClick={handleLogin}
           disabled={loading}
-          className={`group relative flex w-full items-center justify-center gap-3 rounded-xl border px-6 py-3.5 text-sm font-semibold transition-all active:scale-[0.98] disabled:opacity-50 ${
+          className={`group relative flex w-full items-center justify-center gap-6 rounded-[2rem] border px-12 py-8 text-2xl font-black transition-all active:scale-[0.98] disabled:opacity-50 ${
             isDarkMode 
-            ? "bg-zinc-900 border-zinc-800 hover:bg-zinc-800 hover:border-zinc-700" 
-            : "bg-white border-zinc-200 hover:bg-zinc-50 shadow-sm"
+            ? "bg-zinc-900 border-zinc-800 hover:bg-zinc-800 hover:border-zinc-700 shadow-2xl shadow-black/60" 
+            : "bg-white border-zinc-200 hover:bg-zinc-50 shadow-xl shadow-zinc-200/60"
           }`}
         >
           {loading ? (
-            <div className="h-5 w-5 animate-spin rounded-full border-2 border-zinc-400 border-t-transparent" />
+            <div className="h-10 w-10 animate-spin rounded-full border-4 border-zinc-400 border-t-transparent" />
           ) : (
             <>
-              <GoogleIcon />
+              <div className="scale-[1.5]">
+                <GoogleIcon />
+              </div>
               <span>Entrar com Google</span>
             </>
           )}
         </button>
 
-        <p className="text-xs text-zinc-500">
+        <p className={`text-lg font-medium ${isDarkMode ? "text-zinc-500" : "text-zinc-400"}`}>
           Acesso restrito a colaboradores autorizados.
         </p>
       </div>
