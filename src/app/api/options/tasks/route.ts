@@ -10,7 +10,7 @@ export async function GET(request: Request) {
   try {
     let query = admin
       .from("eap-tab")
-      .select("WBS, Subtask, OS")
+      .select("WBS, Subtask, OS, Item, \"Cod Ativ\"")
       .not("WBS", "is", null)
       .not("OS", "is", null)
       .order("WBS");

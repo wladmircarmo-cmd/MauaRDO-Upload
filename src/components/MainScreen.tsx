@@ -43,7 +43,7 @@ export function MainScreen() {
   const [ccOptions, setCcOptions] = useState<{ cc: string, descriçãocc: string }[]>([]);
   const [os, setOs] = useState<string>("");
   const [date, setDate] = useState<string>(new Date().toISOString().split("T")[0]);
-  const [wbsList, setWbsList] = useState<{ wbs: string, subtask?: string, os?: string }[]>([]);
+  const [wbsList, setWbsList] = useState<{ wbs: string, subtask?: string, os?: string, item?: string, codAtiv?: string }[]>([]);
   const [wbsLoading, setWbsLoading] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
@@ -119,10 +119,12 @@ export function MainScreen() {
         const taskRes = await fetch("/api/options/tasks");
         if (taskRes.ok) {
           const tasks = await taskRes.json();
-          const formattedTasks = tasks.map((t: { WBS: string, Subtask: string, OS: string }) => ({
+          const formattedTasks = tasks.map((t: { WBS: string, Subtask: string, OS: string, Item: string, "Cod Ativ": string }) => ({
             wbs: t.WBS,
             subtask: t.Subtask,
-            os: t.OS
+            os: t.OS,
+            item: t.Item,
+            codAtiv: t["Cod Ativ"]
           }));
           setWbsList(formattedTasks);
           if (formattedTasks.length > 0) {
@@ -394,7 +396,7 @@ export function MainScreen() {
             ) : wbsList.length > 0 ? (
               wbsList.map((entry) => (
                 <option key={entry.wbs} value={entry.wbs}>
-                  {entry.wbs} - {entry.subtask || "Sem descrição"}
+                  {entry.wbs} {entry.item ? `- ${entry.item}` : ""} {entry.codAtiv ? `(${entry.codAtiv})` : ""} - {entry.subtask || "Sem descrição"}
                 </option>
               ))
             ) : (
