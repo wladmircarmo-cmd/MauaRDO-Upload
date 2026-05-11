@@ -41,26 +41,31 @@ export async function GET() {
         rdo: {
           cc: string;
           data_rdo: string;
-        }
-      };
+        }[]
+      }[];
       rdo_imagens: { id_imagem: number | string }[];
-    }) => ({
-      id: String(item.id_atividade),
-      data: item.rdo_os.rdo.data_rdo,
-      cc: item.rdo_os.rdo.cc,
-      os: item.rdo_os.os,
-      rdo_atividades: [
-        {
-          wbs: item.tarefa,
-          descricao: item.comentario ?? "",
-        }
-      ],
-      rdo_imagens: [
-        {
-          count: item.rdo_imagens?.length || 0
-        }
-      ]
-    }));
+    }) => {
+      const osData = item.rdo_os?.[0];
+      const rdoData = osData?.rdo?.[0];
+
+      return {
+        id: String(item.id_atividade),
+        data: rdoData?.data_rdo || "",
+        cc: rdoData?.cc || "",
+        os: osData?.os || "",
+        rdo_atividades: [
+          {
+            wbs: item.tarefa,
+            descricao: item.comentario ?? "",
+          }
+        ],
+        rdo_imagens: [
+          {
+            count: item.rdo_imagens?.length || 0
+          }
+        ]
+      };
+    });
 
     return NextResponse.json(history);
   } catch (error) {
