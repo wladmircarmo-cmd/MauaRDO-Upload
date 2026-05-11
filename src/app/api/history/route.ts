@@ -43,13 +43,37 @@ export async function GET(request: Request) {
       atividades: { wbs: string; descricao: string; fotos: number }[];
       totalFotos: number;
     }
+    interface RawHistoryItem {
+      tarefa: string;
+      comentario: string | null;
+      rdo_os: {
+        os: string;
+        rdo: {
+          cc: string;
+          data_rdo: string;
+        }[] | {
+          cc: string;
+          data_rdo: string;
+        };
+      }[] | {
+        os: string;
+        rdo: {
+          cc: string;
+          data_rdo: string;
+        }[] | {
+          cc: string;
+          data_rdo: string;
+        };
+      };
+      rdo_imagens: { id_imagem: number | string }[];
+    }
 
     // Group activities by OS + Date + CC
     const groupedMap = new Map<string, HistoryGroup>();
 
-    (data || []).forEach((item: Record<string, any>) => {
-      const osData = Array.isArray(item.rdo_os) ? item.rdo_os[0] : item.rdo_os;
-      const rdoData = osData && Array.isArray(osData.rdo) ? osData.rdo[0] : osData?.rdo;
+    (data as unknown as RawHistoryItem[] || []).forEach((item) => {
+      const osData = (Array.isArray(item.rdo_os) ? item.rdo_os[0] : item.rdo_os) as { os: string, rdo: unknown } | undefined;
+      const rdoData = (osData && Array.isArray(osData.rdo) ? osData.rdo[0] : osData?.rdo) as { cc: string, data_rdo: string } | undefined;
       
       if (!osData || !rdoData) return;
 
