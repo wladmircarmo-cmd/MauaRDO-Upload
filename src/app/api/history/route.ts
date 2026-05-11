@@ -35,40 +35,56 @@ export async function GET(request: Request) {
       throw error;
     }
 
-    const history = (data || []).map((item: {
-      id_atividade: number | string;
-      tarefa: string;
-      comentario: string | null;
-      rdo_os: {
-        os: string;
-        rdo: {
-          cc: string;
-          data_rdo: string;
-        }[]
-      }[];
-      rdo_imagens: { id_imagem: number | string }[];
-    }) => {
-      const osData = item.rdo_os?.[0];
-      const rdoData = osData?.rdo?.[0];
+    // Group activities by OS + Date + CC
+    const groupedMap = new Map<string, any>();
 
-      return {
-        id: String(item.id_atividade),
-        data: rdoData?.data_rdo || "",
-        cc: rdoData?.cc || "",
-        os: osData?.os || "",
-        rdo_atividades: [
-          {
-            wbs: item.tarefa,
-            descricao: item.comentario ?? "",
-          }
-        ],
-        rdo_imagens: [
-          {
-            count: item.rdo_imagens?.length || 0
-          }
-        ]
-      };
+    (data || []).forEach((item: any) => {
+      const osData = Array.isArray(item.rdo_os) ? item.rdo_os[0] : item.rdo_os;
+      const rdoData = osData && Array.isArray(osData.rdo) ? osData.rdo[0] : osData?.rdo;
+      
+      if (!osData || !rdoData) return;
+
+      const groupKey = `${osData.os}-${rdoData.data_rdo}-${rdoData.cc}`;
+      
+      if (!groupedMap.has(groupKey)) {
+        groupedMap.set(groupKey, {
+          id: groupKey,
+          data: rdoData.data_rdo,
+          cc: rdoData.cc,
+          os: osData.os,
+          atividades: [],
+          totalFotos: 0
+        });
+      }
+
+      const group = groupedMap.get(groupKey);
+      
+      // Check if this specific task (WBS + Comment) already exists in this group
+      const ativKey = `${item.tarefa}-${item.comentario || ""}`;
+      let existingAtiv = group.atividades.find((a: any) => `${a.wbs}-${a.descricao}` === ativKey);
+      
+      const fotoCount = item.rdo_imagens?.length || 0;
+      
+      if (existingAtiv) {
+        existingAtiv.fotos += fotoCount;
+      } else {
+        group.atividades.push({
+          wbs: item.tarefa,
+          descricao: item.comentario || "",
+          fotos: fotoCount
+        });
+      }
+      group.totalFotos += fotoCount;
     });
+
+    const history = Array.from(groupedMap.values()).map(group => ({
+      id: group.id,
+      data: group.data,
+      cc: group.cc,
+      os: group.os,
+      rdo_atividades: group.atividades, // Now contains multiple activities
+      totalFotos: group.totalFotos // Sum of all images in this OS group
+    }));
 
     return NextResponse.json({ 
       history, 

@@ -203,58 +203,54 @@ export function MainScreen() {
     }
 
     try {
+      const compressedFiles: Blob[] = [];
       for (let i = 0; i < files.length; i++) {
-        const currentFile = files[i];
         const progress = files.length > 1 ? ` (${i + 1}/${files.length})` : "";
-
-        if (currentFile.size > MAX_IMAGE_BYTES) {
-          setStatus({ kind: "error", message: `Arquivo ${i + 1} excede 10MB.` });
-          return;
-        }
-
         setStatus({ kind: "loading", message: `Comprimindo imagem${progress}...` });
-        const compressed = await compressInBrowser(currentFile);
-
-        setStatus({ kind: "loading", message: `Enviando${progress}...` });
-        const form = new FormData();
-        form.set("file", compressed);
-        form.set("wbs", wbs);
-        form.set("description", description);
-        form.set("cc", cc);
-        form.set("os", os);
-        form.set("date", date);
-
-        const res = await fetch("/api/upload", { method: "POST", body: form });
-        const json = (await res.json().catch(() => null)) as
-          | null
-          | { error?: string; details?: { fieldErrors?: Record<string, string[]> }; supabase_path?: string };
-
-        if (!res.ok) {
-          let errorMsg = `Falha ao enviar imagem ${i + 1}.`;
-          if (json?.error === "invalid_input" && json.details?.fieldErrors) {
-            const firstError = Object.values(json.details.fieldErrors)[0]?.[0];
-            errorMsg = firstError || "Erro de validação nos campos.";
-          } else if (json?.error) {
-            errorMsg = String(json.error);
-          }
-          
-          setStatus({
-            kind: "error",
-            message: `Erro no envio ${i + 1}: ${errorMsg}`,
-          });
-          return;
-        }
+        const compressed = await compressInBrowser(files[i]);
+        compressedFiles.push(compressed);
       }
 
-      setStatus({
-        kind: "success",
-        message: `${files.length} imagem(ns) enviada(s) com sucesso para ${normalizedWbs}`,
+      setStatus({ kind: "loading", message: `Enviando ${files.length} fotos...` });
+      const form = new FormData();
+      compressedFiles.forEach(blob => {
+        form.append("file", blob);
       });
+      form.set("wbs", wbs);
+      form.set("description", description);
+      form.set("cc", cc);
+      form.set("os", os);
+      form.set("date", date);
+
+      const res = await fetch("/api/upload", { method: "POST", body: form });
+      const json = (await res.json().catch(() => null)) as
+        | null
+        | { error?: string; details?: { fieldErrors?: Record<string, string[]> }; success?: boolean };
+
+      if (!res.ok) {
+        let errorMsg = "Falha ao enviar.";
+        if (json?.error === "invalid_input" && json.details?.fieldErrors) {
+          const firstError = Object.values(json.details.fieldErrors)[0]?.[0];
+          errorMsg = firstError || "Erro de validação nos campos.";
+        } else if (json?.error) {
+          errorMsg = String(json.error);
+        }
+        
+        setStatus({
+          kind: "error",
+          message: `Erro no envio: ${errorMsg}`,
+        });
+        return;
+      }
+
+      setStatus({ kind: "success", message: "RDO enviado com sucesso!" });
       setFiles([]);
       setDescription("");
+      setCurrentPage(1);
       fetchHistory(1);
     } catch (error) {
-      setStatus({ kind: "error", message: String(error) });
+      console.error("Upload error:", error);
+      setStatus({ kind: "error", message: "Erro inesperado ao enviar." });
     }
   }, [
     compressInBrowser,
@@ -590,15 +586,18 @@ export function MainScreen() {
                       </p>
                     </div>
                     <div className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${isDarkMode ? "bg-zinc-800 text-zinc-400" : "bg-white text-zinc-500 border border-zinc-100"}`}>
-                      {item.rdo_imagens?.[0]?.count || 0} FOTOS
+                      {item.totalFotos || 0} FOTOS
                     </div>
                   </div>
                   
                   <div className="flex flex-col gap-1">
-                    {item.rdo_atividades?.map((atv, idx) => (
-                      <div key={idx} className="flex gap-2 items-baseline">
-                        <span className="text-[10px] font-mono text-[#2868A0] font-bold">{atv.wbs}</span>
-                        <span className={`text-[11px] truncate ${isDarkMode ? "text-zinc-400" : "text-zinc-600"}`}>{atv.descricao}</span>
+                    {item.rdo_atividades?.map((atv: any, idx: number) => (
+                      <div key={idx} className="flex gap-2 items-baseline justify-between">
+                        <div className="flex gap-2 items-baseline overflow-hidden">
+                          <span className="text-[10px] font-mono text-[#2868A0] font-bold shrink-0">{atv.wbs}</span>
+                          <span className={`text-[11px] truncate ${isDarkMode ? "text-zinc-400" : "text-zinc-600"}`}>{atv.descricao}</span>
+                        </div>
+                        <span className="text-[9px] font-bold text-zinc-400 shrink-0">{atv.fotos} FOT.</span>
                       </div>
                     ))}
                   </div>

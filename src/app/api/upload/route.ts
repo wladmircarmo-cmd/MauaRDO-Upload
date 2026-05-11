@@ -17,22 +17,25 @@ const formSchema = uploadSchema.extend({
 
 export async function POST(request: Request) {
   try {
-    const form = await request.formData();
-    const file = form.get("file");
-    const wbs = form.get("wbs");
-    const description = form.get("description");
-    const cc = form.get("cc");
-    const os = form.get("os");
-    const date = form.get("date");
+    const formData = await request.formData();
+    const cc = formData.get("cc");
+    const os = formData.get("os");
+    const date = formData.get("date");
+    const wbs = formData.get("wbs");
+    const description = formData.get("description");
+    const files = formData.getAll("file") as File[];
 
-    if (!(file instanceof File)) {
-      return NextResponse.json({ error: "missing_file" }, { status: 400 });
+    if (files.length === 0) {
+      return NextResponse.json({ error: "no_files" }, { status: 400 });
     }
     if (typeof wbs !== "string") {
       return NextResponse.json({ error: "missing_wbs" }, { status: 400 });
     }
 
-    assertValidFile(file);
+    for (const file of files) {
+      assertValidFile(file);
+    }
+
     const parsed = formSchema.safeParse({ 
       wbs, 
       description: typeof description === "string" ? description : undefined,
@@ -47,47 +50,7 @@ export async function POST(request: Request) {
       );
     }
 
-    try {
-      // assertWbsExists(parsed.data.wbs); // Removed: we now use database as source of truth for WBS
-    } catch (error) {
-      return NextResponse.json(
-        { error: "invalid_input", details: { fieldErrors: { wbs: [String(error instanceof Error ? error.message : error)] } } },
-        { status: 400 },
-      );
-    }
-
-    const normalizedWbs = normalizeWbs(parsed.data.wbs);
-    const rawBytes = new Uint8Array(await file.arrayBuffer());
-    const normalized = await compressAndNormalizeImage({
-      bytes: rawBytes,
-      maxWidth: 1920,
-      jpegQuality: 0.8,
-    });
-
-    const uploadId = crypto.randomUUID();
-    const filename = `${crypto.randomUUID()}.${normalized.ext}`;
-    const supabasePath = `${normalizedWbs}/${filename}`;
-
     const admin = createSupabaseAdminClient();
-
-    const { error: storageError } = await admin.storage
-      .from("fotos-planilhas")
-      .upload(supabasePath, normalized.bytes, {
-        contentType: normalized.mimeType,
-        upsert: false,
-      });
-
-    if (storageError) {
-      console.error("Storage upload error:", storageError);
-      return NextResponse.json(
-        { 
-          error: "supabase_storage_upload_failed", 
-          details: storageError.message,
-          code: (storageError as unknown as Record<string, unknown>).code as string | undefined,
-        },
-        { status: 500 },
-      );
-    }
 
     // New RDO logic
     try {
@@ -114,7 +77,7 @@ export async function POST(request: Request) {
         id_rdo = rdoData.id_rdo;
       }
 
-      // 2. Get or Create OS
+      // 2. Get or Create RDO_OS
       const { data: osData, error: osError } = await admin
         .from("rdo_os")
         .select("id_rdo_os")
@@ -137,40 +100,78 @@ export async function POST(request: Request) {
         id_rdo_os = osData.id_rdo_os;
       }
 
-      // 3. Create Atividade
-      const { data: atividade, error: ativError } = await admin
+      // 3. Get or Create Atividade
+      const normalizedWbs = normalizeWbs(parsed.data.wbs);
+      const commentValue = parsed.data.description ?? null;
+      
+      let ativQuery = admin
         .from("rdo_atividades")
-        .insert({
-          id_rdo_os,
-          tarefa: normalizedWbs,
-          comentario: parsed.data.description ?? null
-        })
         .select("id_atividade")
-        .single();
-      if (ativError) throw ativError;
+        .eq("id_rdo_os", id_rdo_os)
+        .eq("tarefa", normalizedWbs);
+      
+      if (commentValue === null) ativQuery = ativQuery.is("comentario", null);
+      else ativQuery = ativQuery.eq("comentario", commentValue);
 
-      // 4. Create Imagem
-      const publicUrl = admin.storage.from("fotos-planilhas").getPublicUrl(supabasePath).data.publicUrl;
-      const { error: imgError } = await admin
-        .from("rdo_imagens")
-        .insert({
-          id_atividade: atividade.id_atividade,
-          imagem_url: publicUrl
-        });
-      if (imgError) throw imgError;
+      const { data: ativData, error: ativQueryError } = await ativQuery.maybeSingle();
 
+      let id_atividade: number;
+      if (ativQueryError) throw ativQueryError;
+
+      if (!ativData) {
+        const { data: newAtiv, error: createAtivError } = await admin
+          .from("rdo_atividades")
+          .insert({
+            id_rdo_os,
+            tarefa: normalizedWbs,
+            comentario: commentValue
+          })
+          .select("id_atividade")
+          .single();
+        if (createAtivError) throw createAtivError;
+        id_atividade = newAtiv.id_atividade;
+      } else {
+        id_atividade = ativData.id_atividade;
+      }
+
+      // 4. Upload Files and Create Images
+      const results = [];
+      for (const file of files) {
+        const fileExt = file.name.split(".").pop();
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 7)}.${fileExt}`;
+        const supabasePath = `${normalizedWbs}/${fileName}`;
+
+        const { error: uploadError } = await admin.storage
+          .from("fotos-planilhas")
+          .upload(supabasePath, file);
+
+        if (uploadError) {
+          console.error("Storage upload error:", uploadError);
+          continue; // Skip this file and continue
+        }
+
+        const publicUrl = admin.storage.from("fotos-planilhas").getPublicUrl(supabasePath).data.publicUrl;
+        const { error: imgError } = await admin
+          .from("rdo_imagens")
+          .insert({
+            id_atividade,
+            imagem_url: publicUrl
+          });
+        
+        if (!imgError) {
+          results.push(supabasePath);
+        }
+      }
+
+      return NextResponse.json({ 
+        success: true, 
+        count: results.length,
+        paths: results 
+      });
     } catch (rdoFlowError) {
       console.error("RDO tables insert error:", rdoFlowError);
-      // We don't fail the whole request if RDO insert fails but upload succeeded,
-      // but you might want to return an error here.
+      return NextResponse.json({ error: "internal_server_error" }, { status: 500 });
     }
-
-    return NextResponse.json({
-      ok: true,
-      id: uploadId,
-      wbs: normalizedWbs,
-      supabase_path: supabasePath,
-    });
   } catch (err) {
     const message = err instanceof Error ? err.message : "unknown_error";
     if (err instanceof z.ZodError) {
