@@ -61,7 +61,7 @@ export function MainScreen() {
 
   // Initialize theme from localStorage
   useEffect(() => {
-    const savedTheme = localStorage.getItem("rdo-theme");
+    const savedTheme = localStorage.getItem("theme");
     if (savedTheme === "light") {
       setIsDarkMode(false);
     }
@@ -70,7 +70,7 @@ export function MainScreen() {
   const toggleTheme = () => {
     const newMode = !isDarkMode;
     setIsDarkMode(newMode);
-    localStorage.setItem("rdo-theme", newMode ? "dark" : "light");
+    localStorage.setItem("theme", newMode ? "dark" : "light");
   };
 
   useEffect(() => {
@@ -266,13 +266,13 @@ export function MainScreen() {
               <img
                 src="/images/logo.png"
                 alt="Estaleiro Mauá"
-                className={`h-32 w-auto rounded-xl border object-contain shadow-lg ${isDarkMode ? "border-white/10 shadow-black/30" : "border-zinc-200 shadow-zinc-200/50"
+                className={`h-30 w-auto rounded-xl border object-contain shadow-lg ${isDarkMode ? "border-white/10 shadow-black/30" : "border-zinc-200 shadow-zinc-200/50"
                   }`}
               />
               <div>
                 <h1 className={`text-4xl font-black tracking-tighter transition-colors ${isDarkMode ? "text-white" : "text-zinc-900"
                   }`}>
-                  RDO
+                  Mauá RDO
                 </h1>
               </div>
             </div>
