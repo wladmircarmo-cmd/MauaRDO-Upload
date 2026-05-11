@@ -22,19 +22,19 @@ interface HistoryItem {
 }
 
 const SunIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="4" /><path d="M12 2v2" /><path d="M12 20v2" /><path d="m4.93 4.93 1.41 1.41" /><path d="m17.66 17.66 1.41 1.41" /><path d="M2 12h2" /><path d="M20 12h2" /><path d="m6.34 17.66-1.41 1.41" /><path d="m19.07 4.93-1.41 1.41" /></svg>
 );
 
 const MoonIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" /></svg>
 );
 
 const CameraIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" /><circle cx="12" cy="13" r="3" /></svg>
 );
 
 const GalleryIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2" /><circle cx="9" cy="9" r="2" /><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" /></svg>
 );
 
 export function MainScreen() {
@@ -61,7 +61,7 @@ export function MainScreen() {
 
   // Initialize theme from localStorage
   useEffect(() => {
-    const savedTheme = localStorage.getItem("theme");
+    const savedTheme = localStorage.getItem("rdo-theme");
     if (savedTheme === "light") {
       setIsDarkMode(false);
     }
@@ -70,7 +70,7 @@ export function MainScreen() {
   const toggleTheme = () => {
     const newMode = !isDarkMode;
     setIsDarkMode(newMode);
-    localStorage.setItem("theme", newMode ? "dark" : "light");
+    localStorage.setItem("rdo-theme", newMode ? "dark" : "light");
   };
 
   useEffect(() => {
@@ -228,7 +228,7 @@ export function MainScreen() {
         } else if (json?.error) {
           errorMsg = String(json.error);
         }
-        
+
         setStatus({
           kind: "error",
           message: `Erro no envio: ${errorMsg}`,
@@ -266,14 +266,12 @@ export function MainScreen() {
               <img
                 src="/images/logo.png"
                 alt="Estaleiro Mauá"
-                className={`h-20 w-auto rounded-xl border object-contain shadow-lg ${
-                  isDarkMode ? "border-white/10 shadow-black/30" : "border-zinc-200 shadow-zinc-200/50"
-                }`}
+                className={`h-32 w-auto rounded-xl border object-contain shadow-lg ${isDarkMode ? "border-white/10 shadow-black/30" : "border-zinc-200 shadow-zinc-200/50"
+                  }`}
               />
               <div>
-                <h1 className={`text-4xl font-black tracking-tighter transition-colors ${
-                  isDarkMode ? "text-white" : "text-zinc-900"
-                }`}>
+                <h1 className={`text-4xl font-black tracking-tighter transition-colors ${isDarkMode ? "text-white" : "text-zinc-900"
+                  }`}>
                   RDO
                 </h1>
               </div>
@@ -288,22 +286,20 @@ export function MainScreen() {
                   await supabase.auth.signOut();
                   window.location.reload();
                 }}
-                className={`p-2.5 rounded-xl border transition-all active:scale-95 ${
-                  isDarkMode 
-                  ? "bg-zinc-900 border-zinc-700 text-zinc-100 hover:bg-zinc-800" 
+                className={`p-2.5 rounded-xl border transition-all active:scale-95 ${isDarkMode
+                  ? "bg-zinc-900 border-zinc-700 text-zinc-100 hover:bg-zinc-800"
                   : "bg-white border-zinc-200 text-zinc-800 hover:bg-zinc-100 shadow-sm"
-                }`}
+                  }`}
                 title="Sair do sistema"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></svg>
               </button>
               <button
                 onClick={toggleTheme}
-                className={`p-2.5 rounded-xl border transition-all active:scale-95 ${
-                  isDarkMode 
-                  ? "bg-zinc-900 border-zinc-700 text-zinc-100 hover:bg-zinc-800" 
+                className={`p-2.5 rounded-xl border transition-all active:scale-95 ${isDarkMode
+                  ? "bg-zinc-900 border-zinc-700 text-zinc-100 hover:bg-zinc-800"
                   : "bg-white border-zinc-200 text-zinc-800 hover:bg-zinc-100 shadow-sm"
-                }`}
+                  }`}
                 title={isDarkMode ? "Mudar para modo claro" : "Mudar para modo escuro"}
               >
                 {isDarkMode ? <SunIcon /> : <MoonIcon />}
@@ -335,11 +331,10 @@ export function MainScreen() {
             <select
               value={cc}
               onChange={(e) => setCc(e.target.value)}
-              className={`w-full rounded-xl border px-3 py-2 text-sm outline-none focus:border-[#2868A0] transition-colors ${
-                isDarkMode 
-                ? "border-zinc-700 bg-zinc-950 text-zinc-100" 
+              className={`w-full rounded-xl border px-3 py-2 text-sm outline-none focus:border-[#2868A0] transition-colors ${isDarkMode
+                ? "border-zinc-700 bg-zinc-950 text-zinc-100"
                 : "border-zinc-200 bg-zinc-50 text-zinc-900"
-              }`}
+                }`}
             >
               {optionsLoading ? (
                 <option>Carregando...</option>
@@ -358,11 +353,10 @@ export function MainScreen() {
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              className={`w-full rounded-xl border px-3 py-2 text-sm outline-none focus:border-[#2868A0] transition-colors ${
-                isDarkMode 
-                ? "border-zinc-700 bg-zinc-950 text-zinc-100" 
+              className={`w-full rounded-xl border px-3 py-2 text-sm outline-none focus:border-[#2868A0] transition-colors ${isDarkMode
+                ? "border-zinc-700 bg-zinc-950 text-zinc-100"
                 : "border-zinc-200 bg-zinc-50 text-zinc-900"
-              }`}
+                }`}
             />
           </div>
         </section>
@@ -373,11 +367,10 @@ export function MainScreen() {
             type="text"
             value={os}
             disabled
-            className={`mt-2 w-full rounded-xl border px-3 py-2 text-sm outline-none cursor-not-allowed transition-colors ${
-              isDarkMode 
-              ? "border-zinc-700 bg-zinc-900/50 text-zinc-400" 
+            className={`mt-2 w-full rounded-xl border px-3 py-2 text-sm outline-none cursor-not-allowed transition-colors ${isDarkMode
+              ? "border-zinc-700 bg-zinc-900/50 text-zinc-400"
               : "border-zinc-200 bg-zinc-100 text-zinc-500"
-            }`}
+              }`}
           />
           <p className="mt-1 text-[10px] text-zinc-500 uppercase tracking-tight">
             Vinculado automaticamente à tarefa
@@ -395,11 +388,10 @@ export function MainScreen() {
               if (found) setOs(found.os || "");
             }}
             disabled={wbsLoading || wbsList.length === 0}
-            className={`mt-2 w-full rounded-xl border px-3 py-2 text-sm outline-none focus:border-[#2868A0] disabled:cursor-not-allowed disabled:opacity-60 transition-colors ${
-              isDarkMode 
-              ? "border-zinc-700 bg-zinc-950 text-zinc-100" 
+            className={`mt-2 w-full rounded-xl border px-3 py-2 text-sm outline-none focus:border-[#2868A0] disabled:cursor-not-allowed disabled:opacity-60 transition-colors ${isDarkMode
+              ? "border-zinc-700 bg-zinc-950 text-zinc-100"
               : "border-zinc-200 bg-zinc-50 text-zinc-900"
-            }`}
+              }`}
           >
             {wbsLoading ? (
               <option>Carregando tarefas...</option>
@@ -425,11 +417,10 @@ export function MainScreen() {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Opcional: Descreva o que está na foto..."
-            className={`mt-2 w-full rounded-xl border px-3 py-2 text-sm outline-none focus:border-[#2868A0] transition-colors ${
-              isDarkMode 
-              ? "border-zinc-700 bg-zinc-950 text-zinc-100" 
+            className={`mt-2 w-full rounded-xl border px-3 py-2 text-sm outline-none focus:border-[#2868A0] transition-colors ${isDarkMode
+              ? "border-zinc-700 bg-zinc-950 text-zinc-100"
               : "border-zinc-200 bg-zinc-50 text-zinc-900"
-            }`}
+              }`}
           />
         </section>
         <section className={`rounded-2xl border p-5 transition-colors ${isDarkMode ? "border-zinc-800 bg-zinc-950/60" : "border-zinc-200 bg-white shadow-sm"}`}>
@@ -439,22 +430,20 @@ export function MainScreen() {
               <button
                 type="button"
                 onClick={() => cameraInputRef.current?.click()}
-                className={`flex items-center justify-center gap-3 rounded-xl border py-4 text-lg font-bold transition active:scale-95 ${
-                  isDarkMode 
-                  ? "bg-zinc-900 border-zinc-700 text-zinc-100 hover:bg-zinc-800" 
+                className={`flex items-center justify-center gap-3 rounded-xl border py-4 text-lg font-bold transition active:scale-95 ${isDarkMode
+                  ? "bg-zinc-900 border-zinc-700 text-zinc-100 hover:bg-zinc-800"
                   : "bg-zinc-100 border-zinc-200 text-zinc-800 hover:bg-zinc-200"
-                }`}
+                  }`}
               >
                 <CameraIcon /> Câmera
               </button>
               <button
                 type="button"
                 onClick={() => galleryInputRef.current?.click()}
-                className={`flex items-center justify-center gap-3 rounded-xl border py-4 text-lg font-bold transition active:scale-95 ${
-                  isDarkMode 
-                  ? "bg-zinc-900 border-zinc-700 text-zinc-100 hover:bg-zinc-800" 
+                className={`flex items-center justify-center gap-3 rounded-xl border py-4 text-lg font-bold transition active:scale-95 ${isDarkMode
+                  ? "bg-zinc-900 border-zinc-700 text-zinc-100 hover:bg-zinc-800"
                   : "bg-zinc-100 border-zinc-200 text-zinc-800 hover:bg-zinc-200"
-                }`}
+                  }`}
               >
                 <GalleryIcon /> Galeria
               </button>
@@ -481,11 +470,10 @@ export function MainScreen() {
 
           <div
             {...getRootProps()}
-            className={`rounded-2xl border border-dashed p-6 transition-all duration-300 ${
-              isDragActive 
-              ? "border-[#2868A0] bg-[#2868A0]/10 scale-[1.02]" 
+            className={`rounded-2xl border border-dashed p-6 transition-all duration-300 ${isDragActive
+              ? "border-[#2868A0] bg-[#2868A0]/10 scale-[1.02]"
               : isDarkMode ? "border-zinc-800 bg-zinc-900/20" : "border-zinc-200 bg-zinc-50"
-            }`}
+              }`}
           >
             <input {...getInputProps()} />
 
@@ -543,11 +531,10 @@ export function MainScreen() {
 
           {status.kind !== "idle" && status.kind !== "loading" && (
             <div
-              className={`rounded-xl border px-4 py-3 text-sm transition-all ${
-                status.kind === "success"
-                  ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-500"
-                  : "border-rose-500/50 bg-rose-500/10 text-rose-500"
-              }`}
+              className={`rounded-xl border px-4 py-3 text-sm transition-all ${status.kind === "success"
+                ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-500"
+                : "border-rose-500/50 bg-rose-500/10 text-rose-500"
+                }`}
             >
               {status.message}
             </div>
@@ -559,7 +546,7 @@ export function MainScreen() {
             <h2 className={`text-sm font-medium uppercase tracking-wider ${isDarkMode ? "text-zinc-200" : "text-zinc-700"}`}>
               Lançamentos Recentes
             </h2>
-            <button 
+            <button
               onClick={() => fetchHistory(1)}
               disabled={historyLoading}
               className={`text-[10px] uppercase font-bold tracking-widest hover:underline disabled:opacity-50 ${isDarkMode ? "text-zinc-500" : "text-zinc-400"}`}
@@ -575,11 +562,10 @@ export function MainScreen() {
               </p>
             ) : (
               history.map((item) => (
-                <div 
-                  key={item.id} 
-                  className={`flex flex-col gap-2 rounded-xl border p-3 transition-all ${
-                    isDarkMode ? "bg-zinc-900/40 border-zinc-800" : "bg-zinc-50 border-zinc-100 shadow-sm"
-                  }`}
+                <div
+                  key={item.id}
+                  className={`flex flex-col gap-2 rounded-xl border p-3 transition-all ${isDarkMode ? "bg-zinc-900/40 border-zinc-800" : "bg-zinc-50 border-zinc-100 shadow-sm"
+                    }`}
                 >
                   <div className="flex justify-between items-start">
                     <div>
@@ -594,7 +580,7 @@ export function MainScreen() {
                       {item.totalFotos || 0} FOTOS
                     </div>
                   </div>
-                  
+
                   <div className="flex flex-col gap-1">
                     {item.rdo_atividades?.map((atv, idx) => (
                       <div key={idx} className="flex gap-2 items-baseline justify-between">
@@ -616,15 +602,14 @@ export function MainScreen() {
               <button
                 onClick={() => fetchHistory(currentPage - 1)}
                 disabled={currentPage === 1 || historyLoading}
-                className={`text-xs font-bold uppercase tracking-widest px-3 py-2 rounded-lg border transition-all disabled:opacity-30 ${
-                  isDarkMode 
-                  ? "bg-zinc-900 border-zinc-800 text-zinc-400 hover:bg-zinc-800" 
+                className={`text-xs font-bold uppercase tracking-widest px-3 py-2 rounded-lg border transition-all disabled:opacity-30 ${isDarkMode
+                  ? "bg-zinc-900 border-zinc-800 text-zinc-400 hover:bg-zinc-800"
                   : "bg-zinc-50 border-zinc-200 text-zinc-600 hover:bg-zinc-100"
-                }`}
+                  }`}
               >
                 Anterior
               </button>
-              
+
               <span className={`text-[10px] font-bold uppercase tracking-widest ${isDarkMode ? "text-zinc-500" : "text-zinc-400"}`}>
                 Página {currentPage} de {totalPages}
               </span>
@@ -632,11 +617,10 @@ export function MainScreen() {
               <button
                 onClick={() => fetchHistory(currentPage + 1)}
                 disabled={currentPage === totalPages || historyLoading}
-                className={`text-xs font-bold uppercase tracking-widest px-3 py-2 rounded-lg border transition-all disabled:opacity-30 ${
-                  isDarkMode 
-                  ? "bg-zinc-900 border-zinc-800 text-zinc-400 hover:bg-zinc-800" 
+                className={`text-xs font-bold uppercase tracking-widest px-3 py-2 rounded-lg border transition-all disabled:opacity-30 ${isDarkMode
+                  ? "bg-zinc-900 border-zinc-800 text-zinc-400 hover:bg-zinc-800"
                   : "bg-zinc-50 border-zinc-200 text-zinc-600 hover:bg-zinc-100"
-                }`}
+                  }`}
               >
                 Próxima
               </button>
