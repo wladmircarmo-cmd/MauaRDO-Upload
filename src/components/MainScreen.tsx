@@ -254,6 +254,7 @@ export function MainScreen() {
         <header className="flex items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-4">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/images/logo.png"
                 alt="Estaleiro Mauá"

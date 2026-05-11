@@ -32,7 +32,19 @@ export async function GET() {
     }
 
     // Map to the structure expected by the frontend
-    const history = data.map((item: any) => ({
+    const history = data.map((item: {
+      id_atividade: number | string;
+      tarefa: string;
+      comentario: string | null;
+      rdo_os: {
+        os: string;
+        rdo: {
+          cc: string;
+          data_rdo: string;
+        }
+      };
+      rdo_imagens: { id_imagem: number | string }[];
+    }) => ({
       id: String(item.id_atividade),
       data: item.rdo_os.rdo.data_rdo,
       cc: item.rdo_os.rdo.cc,
