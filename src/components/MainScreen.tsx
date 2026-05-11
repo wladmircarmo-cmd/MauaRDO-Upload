@@ -190,7 +190,15 @@ export function MainScreen() {
       return;
     }
     if (!wbs) {
-      setStatus({ kind: "error", message: "Selecione um WBS." });
+      setStatus({ kind: "error", message: "Selecione uma Tarefa (WBS)." });
+      return;
+    }
+    if (!os) {
+      setStatus({ kind: "error", message: "A OS é obrigatória." });
+      return;
+    }
+    if (!cc) {
+      setStatus({ kind: "error", message: "O Centro de Custo (CC) é obrigatório." });
       return;
     }
 
@@ -219,12 +227,20 @@ export function MainScreen() {
         const res = await fetch("/api/upload", { method: "POST", body: form });
         const json = (await res.json().catch(() => null)) as
           | null
-          | { error?: unknown; supabase_path?: unknown };
+          | { error?: string; details?: { fieldErrors?: Record<string, string[]> }; supabase_path?: string };
 
         if (!res.ok) {
+          let errorMsg = `Falha ao enviar imagem ${i + 1}.`;
+          if (json?.error === "invalid_input" && json.details?.fieldErrors) {
+            const firstError = Object.values(json.details.fieldErrors)[0]?.[0];
+            errorMsg = firstError || "Erro de validação nos campos.";
+          } else if (json?.error) {
+            errorMsg = String(json.error);
+          }
+          
           setStatus({
             kind: "error",
-            message: json?.error ? `Erro no envio ${i + 1}: ${String(json.error)}` : `Falha ao enviar imagem ${i + 1}.`,
+            message: `Erro no envio ${i + 1}: ${errorMsg}`,
           });
           return;
         }

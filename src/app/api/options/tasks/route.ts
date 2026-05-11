@@ -12,6 +12,7 @@ export async function GET(request: Request) {
       .from("eap-tab")
       .select("WBS, Subtask, OS")
       .not("WBS", "is", null)
+      .not("OS", "is", null)
       .order("WBS");
 
     if (os) {

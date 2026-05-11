@@ -14,7 +14,7 @@ export const uploadSchema = z.object({
   wbs: z
     .string()
     .min(1)
-    .regex(/^\d+(?:\.\d+)+$/, "WBS inválido"),
+    .regex(/^\d+(\.\d+)*$/, "WBS inválido"),
   description: z.string().optional().nullable(),
   cc: z.string().min(1, "CC é obrigatório"),
   os: z.string().min(1, "OS é obrigatória"),
