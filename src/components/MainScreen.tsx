@@ -15,11 +15,10 @@ export function MainScreen() {
   const [wbs, setWbs] = useState<string>("");
   const [description, setDescription] = useState<string>("");
   const [cc, setCc] = useState<string>("");
-  const [ccOptions, setCcOptions] = useState<{cc: string, descriçãocc: string}[]>([]);
+  const [ccOptions, setCcOptions] = useState<{ cc: string, descriçãocc: string }[]>([]);
   const [os, setOs] = useState<string>("");
-  const [osOptions, setOsOptions] = useState<string[]>([]);
   const [date, setDate] = useState<string>(new Date().toISOString().split("T")[0]);
-  const [wbsList, setWbsList] = useState<{wbs: string, subtask?: string}[]>([]);
+  const [wbsList, setWbsList] = useState<{ wbs: string, subtask?: string, os?: string }[]>([]);
   const [wbsLoading, setWbsLoading] = useState(false);
   const [wbsError, setWbsError] = useState<string | null>(null);
   const [files, setFiles] = useState<File[]>([]);
@@ -41,56 +40,45 @@ export function MainScreen() {
   }, [files]);
 
 
-  // Load CC and OS options
+  // Load initial options (CC and all Tasks)
   useEffect(() => {
-    async function loadOptions() {
+    async function init() {
       try {
-        const response = await fetch("/api/options");
-        if (!response.ok) throw new Error("Falha ao carregar opções.");
-        const data = await response.json();
-        setCcOptions(data.ccs || []);
-        setOsOptions(data.oss || []);
-        if (data.ccs?.length > 0) setCc(data.ccs[0].cc);
-        if (data.oss?.length > 0) setOs(data.oss[0]);
+        setOptionsLoading(true);
+        // Load CCs
+        const optRes = await fetch("/api/options");
+        if (optRes.ok) {
+          const data = await optRes.json();
+          setCcOptions(data.ccs || []);
+          if (data.ccs?.length > 0) setCc(data.ccs[0].cc);
+        }
+
+        // Load all Tasks
+        setWbsLoading(true);
+        const taskRes = await fetch("/api/options/tasks");
+        if (taskRes.ok) {
+          const tasks = await taskRes.json();
+          const formattedTasks = tasks.map((t: { WBS: string, Subtask: string, OS: string }) => ({
+            wbs: t.WBS,
+            subtask: t.Subtask,
+            os: t.OS
+          }));
+          setWbsList(formattedTasks);
+          if (formattedTasks.length > 0) {
+            setWbs(formattedTasks[0].wbs);
+            setOs(formattedTasks[0].os || "");
+          }
+        }
       } catch (error) {
-        console.error("Error loading options:", error);
+        console.error("Error initializing options:", error);
       } finally {
         setOptionsLoading(false);
-      }
-    }
-    loadOptions();
-  }, []);
-
-  // Load Tasks (WBS) when OS changes
-  useEffect(() => {
-    if (!os) return;
-
-    async function loadTasks() {
-      setWbsLoading(true);
-      setWbsError(null);
-      try {
-        const response = await fetch(`/api/options/tasks?os=${os}`);
-        if (!response.ok) throw new Error("Falha ao carregar tarefas.");
-        const tasks = await response.json();
-        const formattedTasks = tasks.map((t: { WBS: string, Subtask: string }) => ({
-          wbs: t.WBS,
-          subtask: t.Subtask
-        }));
-        setWbsList(formattedTasks);
-        if (formattedTasks.length > 0) {
-          setWbs(formattedTasks[0].wbs);
-        } else {
-          setWbs("");
-        }
-      } catch (error: unknown) {
-        setWbsError(error instanceof Error ? error.message : String(error));
-      } finally {
         setWbsLoading(false);
       }
     }
+    init();
+  }, []);
 
-    loadTasks();
-  }, [os]);
 
   const onDrop = useCallback((accepted: File[]) => {
     setFiles((prev) => {
@@ -145,7 +133,7 @@ export function MainScreen() {
       for (let i = 0; i < files.length; i++) {
         const currentFile = files[i];
         const progress = files.length > 1 ? ` (${i + 1}/${files.length})` : "";
-        
+
         if (currentFile.size > MAX_IMAGE_BYTES) {
           setStatus({ kind: "error", message: `Arquivo ${i + 1} excede 10MB.` });
           return;
@@ -206,27 +194,25 @@ export function MainScreen() {
               <img
                 src="/images/logo.png"
                 alt="Estaleiro Mauá"
-                className="h-15 w-35 rounded-xl border border-white/10 object-cover shadow-lg shadow-black/30"
+                className="h-20 w-60 rounded-xl border border-white/10 object-cover shadow-lg shadow-black/30"
               />
               <div>
                 <h1 className="text-lg font-semibold tracking-tight text-white">
-                  Fotos • WBS Upload
+                  RDO
                 </h1>
-                <p className="text-sm text-zinc-400">
-                  Supabase Storage
-                </p>
+
               </div>
             </div>
           </div>
 
           <div className="flex flex-col items-end gap-2">
-{/*             <div className="rounded-xl border border-[#2868A0] px-4 py-2 text-sm font-semibold text-zinc-100">
+            {/*             <div className="rounded-xl border border-[#2868A0] px-4 py-2 text-sm font-semibold text-zinc-100">
               Upload aberto para qualquer usuário
             </div> */}
           </div>
         </header>
 
-{/*         <section className="rounded-2xl border border-zinc-800 bg-zinc-950/60 p-5">
+        {/*         <section className="rounded-2xl border border-zinc-800 bg-zinc-950/60 p-5">
           <div className="flex flex-col gap-1">
             <p className="text-sm font-medium text-zinc-200">Sessão</p>
             {!isAuthed ? (
@@ -242,7 +228,7 @@ export function MainScreen() {
           </div>
         </section> */}
 
-        
+
         <section className="grid grid-cols-2 gap-4 rounded-2xl border border-zinc-800 bg-zinc-950/60 p-5">
           <div className="flex flex-col gap-2">
             <label className="text-sm font-medium text-zinc-200">CC (Centro de Custo)</label>
@@ -275,28 +261,27 @@ export function MainScreen() {
 
         <section className="rounded-2xl border border-zinc-800 bg-zinc-950/60 p-5">
           <label className="text-sm font-medium text-zinc-200">OS (Ordem de Serviço)</label>
-          <select
+          <input
+            type="text"
             value={os}
-            onChange={(e) => setOs(e.target.value)}
-            className="mt-2 w-full rounded-xl border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 outline-none focus:border-[#2868A0]"
-          >
-            {optionsLoading ? (
-              <option>Carregando...</option>
-            ) : (
-              osOptions.map((item) => (
-                <option key={item} value={item}>
-                  {item}
-                </option>
-              ))
-            )}
-          </select>
+            disabled
+            className="mt-2 w-full rounded-xl border border-zinc-700 bg-zinc-900/50 px-3 py-2 text-sm text-zinc-400 outline-none cursor-not-allowed"
+          />
+          <p className="mt-1 text-[10px] text-zinc-500 uppercase tracking-tight">
+            Vinculado automaticamente à tarefa
+          </p>
         </section>
 
         <section className="rounded-2xl border border-zinc-800 bg-zinc-950/60 p-5">
           <label className="text-sm font-medium text-zinc-200">TAREFA</label>
           <select
             value={wbs}
-            onChange={(e) => setWbs(e.target.value)}
+            onChange={(e) => {
+              const selectedWbs = e.target.value;
+              setWbs(selectedWbs);
+              const found = wbsList.find(t => t.wbs === selectedWbs);
+              if (found) setOs(found.os || "");
+            }}
             disabled={wbsLoading || wbsList.length === 0}
             className="mt-2 w-full rounded-xl border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 outline-none focus:border-[#2868A0] disabled:cursor-not-allowed disabled:opacity-60"
           >
@@ -331,21 +316,21 @@ export function MainScreen() {
             className="mt-2 w-full rounded-xl border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 outline-none focus:border-[#2868A0]"
           />
         </section>
-<section className="rounded-2xl border border-zinc-800 bg-zinc-950/60 p-5">
-          <div className="flex items-center justify-between mb-4">
+        <section className="rounded-2xl border border-zinc-800 bg-zinc-950/60 p-5">
+          <div className="flex flex-col gap-4 mb-4">
             <p className="text-sm font-medium text-zinc-200 uppercase tracking-wider">Imagens</p>
-            <div className="flex gap-2">
+            <div className="grid grid-cols-2 gap-3">
               <button
                 type="button"
                 onClick={() => cameraInputRef.current?.click()}
-                className="flex items-center gap-2 rounded-xl bg-zinc-900 border border-zinc-700 px-4 py-2 text-xs font-bold text-zinc-100 hover:bg-zinc-800 transition active:scale-95"
+                className="flex items-center justify-center gap-3 rounded-xl bg-zinc-900 border border-zinc-700 py-4 text-lg font-bold text-zinc-100 hover:bg-zinc-800 transition active:scale-95"
               >
                 📸 Câmera
               </button>
               <button
                 type="button"
                 onClick={() => galleryInputRef.current?.click()}
-                className="flex items-center gap-2 rounded-xl bg-zinc-900 border border-zinc-700 px-4 py-2 text-xs font-bold text-zinc-100 hover:bg-zinc-800 transition active:scale-95"
+                className="flex items-center justify-center gap-3 rounded-xl bg-zinc-900 border border-zinc-700 py-4 text-lg font-bold text-zinc-100 hover:bg-zinc-800 transition active:scale-95"
               >
                 🖼️ Galeria
               </button>
@@ -381,13 +366,8 @@ export function MainScreen() {
 
             <div className="flex flex-col items-center gap-4 py-4">
               <div className="text-sm text-zinc-400 text-center">
-                {isDragActive ? (
-                  <span className="text-[#2868A0] font-bold">Solte as imagens aqui</span>
-                ) : (
-                  <>
-                    <p className="text-zinc-200 font-medium mb-1">Arraste fotos aqui</p>
-                    <p className="text-xs text-zinc-500">ou use os botões acima</p>
-                  </>
+                {isDragActive && (
+                  <span className="text-[#2868A0] font-bold text-lg">Solte as imagens aqui</span>
                 )}
               </div>
 
