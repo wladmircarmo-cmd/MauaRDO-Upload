@@ -48,7 +48,7 @@ export async function POST(request: Request) {
     }
 
     try {
-      assertWbsExists(parsed.data.wbs);
+      // assertWbsExists(parsed.data.wbs); // Removed: we now use database as source of truth for WBS
     } catch (error) {
       return NextResponse.json(
         { error: "invalid_input", details: { fieldErrors: { wbs: [String(error instanceof Error ? error.message : error)] } } },

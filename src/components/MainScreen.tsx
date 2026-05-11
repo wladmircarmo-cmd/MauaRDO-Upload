@@ -586,7 +586,7 @@ export function MainScreen() {
                         OS {item.os}
                       </p>
                       <p className="text-[10px] text-zinc-500">
-                        {new Date(item.data).toLocaleDateString('pt-BR')} • CC {item.cc}
+                        {item.data ? new Date(item.data + 'T12:00:00').toLocaleDateString('pt-BR') : '---'} • CC {item.cc}
                       </p>
                     </div>
                     <div className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${isDarkMode ? "bg-zinc-800 text-zinc-400" : "bg-white text-zinc-500 border border-zinc-100"}`}>
