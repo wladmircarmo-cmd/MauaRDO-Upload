@@ -16,8 +16,8 @@ interface HistoryItem {
   data: string;
   cc: string;
   os: string;
-  rdo_atividades: { wbs: string; descricao: string }[];
-  rdo_imagens: { count: number }[];
+  rdo_atividades: { wbs: string; descricao: string; fotos: number }[];
+  totalFotos: number;
 }
 
 const SunIcon = () => (
