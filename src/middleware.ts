@@ -1,21 +1,28 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { updateSession } from '@/lib/supabase/middleware'
-import { createSupabaseServerClient } from '@/lib/supabase/server'
 
 export async function middleware(request: NextRequest) {
-  const response = await updateSession(request)
-  const supabase = await createSupabaseServerClient()
+  const { supabase, response } = await updateSession(request)
+  
   const { data: { user } } = await supabase.auth.getUser()
 
   const isLoginPage = request.nextUrl.pathname === '/login'
   const isAuthPage = request.nextUrl.pathname.startsWith('/auth')
 
   if (!user && !isLoginPage && !isAuthPage) {
-    return NextResponse.redirect(new URL('/login', request.url))
+    const url = request.nextUrl.clone()
+    url.pathname = '/login'
+    return NextResponse.redirect(url, {
+      headers: response.headers,
+    })
   }
 
   if (user && isLoginPage) {
-    return NextResponse.redirect(new URL('/', request.url))
+    const url = request.nextUrl.clone()
+    url.pathname = '/'
+    return NextResponse.redirect(url, {
+      headers: response.headers,
+    })
   }
 
   return response

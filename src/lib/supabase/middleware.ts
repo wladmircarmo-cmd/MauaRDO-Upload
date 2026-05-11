@@ -28,6 +28,6 @@ export async function updateSession(request: NextRequest) {
   // Refresh session if expired - required for Server Components
   await supabase.auth.getUser();
 
-  return supabaseResponse;
+  return { supabase, response: supabaseResponse };
 }
 
