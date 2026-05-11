@@ -23,9 +23,6 @@ export async function POST(request: Request) {
     const description = formData.get("description");
     const files = formData.getAll("file") as File[];
 
-    if (files.length === 0) {
-      return NextResponse.json({ error: "no_files" }, { status: 400 });
-    }
     if (typeof wbs !== "string") {
       return NextResponse.json({ error: "missing_wbs" }, { status: 400 });
     }

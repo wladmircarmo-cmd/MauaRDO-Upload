@@ -73,10 +73,6 @@ export function MainScreen() {
   };
 
   useEffect(() => {
-    if (files.length === 0) {
-      setPreviewUrls([]);
-      return;
-    }
     const urls = files.map((f) => URL.createObjectURL(f));
     setPreviewUrls(urls);
     return () => urls.forEach((url) => URL.revokeObjectURL(url));
@@ -185,10 +181,6 @@ export function MainScreen() {
   }, []);
 
   const submit = useCallback(async () => {
-    if (files.length === 0) {
-      setStatus({ kind: "error", message: "Selecione pelo menos uma imagem." });
-      return;
-    }
     if (!wbs) {
       setStatus({ kind: "error", message: "Selecione uma Tarefa (WBS)." });
       return;
