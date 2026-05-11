@@ -11,6 +11,22 @@ type Status =
   | { kind: "success"; message: string }
   | { kind: "error"; message: string };
 
+const SunIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+);
+
+const MoonIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+);
+
+const CameraIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+);
+
+const GalleryIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+);
+
 export function MainScreen() {
   const [wbs, setWbs] = useState<string>("");
   const [description, setDescription] = useState<string>("");
@@ -25,9 +41,24 @@ export function MainScreen() {
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [status, setStatus] = useState<Status>({ kind: "idle" });
   const [optionsLoading, setOptionsLoading] = useState(true);
+  const [isDarkMode, setIsDarkMode] = useState(true);
 
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
+
+  // Initialize theme from localStorage
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("theme");
+    if (savedTheme === "light") {
+      setIsDarkMode(false);
+    }
+  }, []);
+
+  const toggleTheme = () => {
+    const newMode = !isDarkMode;
+    setIsDarkMode(newMode);
+    localStorage.setItem("theme", newMode ? "dark" : "light");
+  };
 
   useEffect(() => {
     if (files.length === 0) {
@@ -186,29 +217,40 @@ export function MainScreen() {
   ]);
 
   return (
-    <div className="min-h-dvh bg-zinc-950 text-zinc-50">
+    <div className={`min-h-dvh transition-colors duration-300 ${isDarkMode ? "bg-zinc-950 text-zinc-50" : "bg-zinc-50 text-zinc-900"}`}>
       <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 py-10">
         <header className="flex items-start justify-between gap-4">
           <div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4">
               <img
                 src="/images/logo.png"
                 alt="Estaleiro Mauá"
-                className="h-20 w-60 rounded-xl border border-white/10 object-cover shadow-lg shadow-black/30"
+                className={`h-20 w-auto rounded-xl border object-contain shadow-lg ${
+                  isDarkMode ? "border-white/10 shadow-black/30" : "border-zinc-200 shadow-zinc-200/50"
+                }`}
               />
               <div>
-                <h1 className="text-lg font-semibold tracking-tight text-white">
+                <h1 className={`text-4xl font-black tracking-tighter transition-colors ${
+                  isDarkMode ? "text-white" : "text-zinc-900"
+                }`}>
                   RDO
                 </h1>
-
               </div>
             </div>
           </div>
 
           <div className="flex flex-col items-end gap-2">
-            {/*             <div className="rounded-xl border border-[#2868A0] px-4 py-2 text-sm font-semibold text-zinc-100">
-              Upload aberto para qualquer usuário
-            </div> */}
+            <button
+              onClick={toggleTheme}
+              className={`p-2.5 rounded-xl border transition-all active:scale-95 ${
+                isDarkMode 
+                ? "bg-zinc-900 border-zinc-700 text-zinc-100 hover:bg-zinc-800" 
+                : "bg-white border-zinc-200 text-zinc-800 hover:bg-zinc-100 shadow-sm"
+              }`}
+              title={isDarkMode ? "Mudar para modo claro" : "Mudar para modo escuro"}
+            >
+              {isDarkMode ? <SunIcon /> : <MoonIcon />}
+            </button>
           </div>
         </header>
 
@@ -229,13 +271,17 @@ export function MainScreen() {
         </section> */}
 
 
-        <section className="grid grid-cols-2 gap-4 rounded-2xl border border-zinc-800 bg-zinc-950/60 p-5">
+        <section className={`grid grid-cols-2 gap-4 rounded-2xl border p-5 transition-colors ${isDarkMode ? "border-zinc-800 bg-zinc-950/60" : "border-zinc-200 bg-white shadow-sm"}`}>
           <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium text-zinc-200">CC (Centro de Custo)</label>
+            <label className={`text-sm font-medium ${isDarkMode ? "text-zinc-200" : "text-zinc-700"}`}>CC (Centro de Custo)</label>
             <select
               value={cc}
               onChange={(e) => setCc(e.target.value)}
-              className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 outline-none focus:border-[#2868A0]"
+              className={`w-full rounded-xl border px-3 py-2 text-sm outline-none focus:border-[#2868A0] transition-colors ${
+                isDarkMode 
+                ? "border-zinc-700 bg-zinc-950 text-zinc-100" 
+                : "border-zinc-200 bg-zinc-50 text-zinc-900"
+              }`}
             >
               {optionsLoading ? (
                 <option>Carregando...</option>
@@ -249,31 +295,39 @@ export function MainScreen() {
             </select>
           </div>
           <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium text-zinc-200">DATA</label>
+            <label className={`text-sm font-medium ${isDarkMode ? "text-zinc-200" : "text-zinc-700"}`}>DATA</label>
             <input
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 outline-none focus:border-[#2868A0]"
+              className={`w-full rounded-xl border px-3 py-2 text-sm outline-none focus:border-[#2868A0] transition-colors ${
+                isDarkMode 
+                ? "border-zinc-700 bg-zinc-950 text-zinc-100" 
+                : "border-zinc-200 bg-zinc-50 text-zinc-900"
+              }`}
             />
           </div>
         </section>
 
-        <section className="rounded-2xl border border-zinc-800 bg-zinc-950/60 p-5">
-          <label className="text-sm font-medium text-zinc-200">OS (Ordem de Serviço)</label>
+        <section className={`rounded-2xl border p-5 transition-colors ${isDarkMode ? "border-zinc-800 bg-zinc-950/60" : "border-zinc-200 bg-white shadow-sm"}`}>
+          <label className={`text-sm font-medium ${isDarkMode ? "text-zinc-200" : "text-zinc-700"}`}>OS (Ordem de Serviço)</label>
           <input
             type="text"
             value={os}
             disabled
-            className="mt-2 w-full rounded-xl border border-zinc-700 bg-zinc-900/50 px-3 py-2 text-sm text-zinc-400 outline-none cursor-not-allowed"
+            className={`mt-2 w-full rounded-xl border px-3 py-2 text-sm outline-none cursor-not-allowed transition-colors ${
+              isDarkMode 
+              ? "border-zinc-700 bg-zinc-900/50 text-zinc-400" 
+              : "border-zinc-200 bg-zinc-100 text-zinc-500"
+            }`}
           />
           <p className="mt-1 text-[10px] text-zinc-500 uppercase tracking-tight">
             Vinculado automaticamente à tarefa
           </p>
         </section>
 
-        <section className="rounded-2xl border border-zinc-800 bg-zinc-950/60 p-5">
-          <label className="text-sm font-medium text-zinc-200">TAREFA</label>
+        <section className={`rounded-2xl border p-5 transition-colors ${isDarkMode ? "border-zinc-800 bg-zinc-950/60" : "border-zinc-200 bg-white shadow-sm"}`}>
+          <label className={`text-sm font-medium ${isDarkMode ? "text-zinc-200" : "text-zinc-700"}`}>TAREFA</label>
           <select
             value={wbs}
             onChange={(e) => {
@@ -283,7 +337,11 @@ export function MainScreen() {
               if (found) setOs(found.os || "");
             }}
             disabled={wbsLoading || wbsList.length === 0}
-            className="mt-2 w-full rounded-xl border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 outline-none focus:border-[#2868A0] disabled:cursor-not-allowed disabled:opacity-60"
+            className={`mt-2 w-full rounded-xl border px-3 py-2 text-sm outline-none focus:border-[#2868A0] disabled:cursor-not-allowed disabled:opacity-60 transition-colors ${
+              isDarkMode 
+              ? "border-zinc-700 bg-zinc-950 text-zinc-100" 
+              : "border-zinc-200 bg-zinc-50 text-zinc-900"
+            }`}
           >
             {wbsLoading ? (
               <option>Carregando tarefas...</option>
@@ -306,33 +364,45 @@ export function MainScreen() {
           )}
         </section>
 
-        <section className="rounded-2xl border border-zinc-800 bg-zinc-950/60 p-5">
-          <label className="text-sm font-medium text-zinc-200">DESCRIÇÃO</label>
+        <section className={`rounded-2xl border p-5 transition-colors ${isDarkMode ? "border-zinc-800 bg-zinc-950/60" : "border-zinc-200 bg-white shadow-sm"}`}>
+          <label className={`text-sm font-medium ${isDarkMode ? "text-zinc-200" : "text-zinc-700"}`}>DESCRIÇÃO</label>
           <input
             type="text"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Opcional: Descreva o que está na foto..."
-            className="mt-2 w-full rounded-xl border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 outline-none focus:border-[#2868A0]"
+            className={`mt-2 w-full rounded-xl border px-3 py-2 text-sm outline-none focus:border-[#2868A0] transition-colors ${
+              isDarkMode 
+              ? "border-zinc-700 bg-zinc-950 text-zinc-100" 
+              : "border-zinc-200 bg-zinc-50 text-zinc-900"
+            }`}
           />
         </section>
-        <section className="rounded-2xl border border-zinc-800 bg-zinc-950/60 p-5">
+        <section className={`rounded-2xl border p-5 transition-colors ${isDarkMode ? "border-zinc-800 bg-zinc-950/60" : "border-zinc-200 bg-white shadow-sm"}`}>
           <div className="flex flex-col gap-4 mb-4">
-            <p className="text-sm font-medium text-zinc-200 uppercase tracking-wider">Imagens</p>
+            <p className={`text-sm font-medium uppercase tracking-wider ${isDarkMode ? "text-zinc-200" : "text-zinc-700"}`}>Imagens</p>
             <div className="grid grid-cols-2 gap-3">
               <button
                 type="button"
                 onClick={() => cameraInputRef.current?.click()}
-                className="flex items-center justify-center gap-3 rounded-xl bg-zinc-900 border border-zinc-700 py-4 text-lg font-bold text-zinc-100 hover:bg-zinc-800 transition active:scale-95"
+                className={`flex items-center justify-center gap-3 rounded-xl border py-4 text-lg font-bold transition active:scale-95 ${
+                  isDarkMode 
+                  ? "bg-zinc-900 border-zinc-700 text-zinc-100 hover:bg-zinc-800" 
+                  : "bg-zinc-100 border-zinc-200 text-zinc-800 hover:bg-zinc-200"
+                }`}
               >
-                📸 Câmera
+                <CameraIcon /> Câmera
               </button>
               <button
                 type="button"
                 onClick={() => galleryInputRef.current?.click()}
-                className="flex items-center justify-center gap-3 rounded-xl bg-zinc-900 border border-zinc-700 py-4 text-lg font-bold text-zinc-100 hover:bg-zinc-800 transition active:scale-95"
+                className={`flex items-center justify-center gap-3 rounded-xl border py-4 text-lg font-bold transition active:scale-95 ${
+                  isDarkMode 
+                  ? "bg-zinc-900 border-zinc-700 text-zinc-100 hover:bg-zinc-800" 
+                  : "bg-zinc-100 border-zinc-200 text-zinc-800 hover:bg-zinc-200"
+                }`}
               >
-                🖼️ Galeria
+                <GalleryIcon /> Galeria
               </button>
             </div>
           </div>
@@ -357,24 +427,25 @@ export function MainScreen() {
 
           <div
             {...getRootProps()}
-            className={[
-              "rounded-2xl border border-dashed p-6 transition-all duration-300",
-              isDragActive ? "border-[#2868A0] bg-[#2868A0]/10 scale-[1.02]" : "border-zinc-800 bg-zinc-900/20",
-            ].join(" ")}
+            className={`rounded-2xl border border-dashed p-6 transition-all duration-300 ${
+              isDragActive 
+              ? "border-[#2868A0] bg-[#2868A0]/10 scale-[1.02]" 
+              : isDarkMode ? "border-zinc-800 bg-zinc-900/20" : "border-zinc-200 bg-zinc-50"
+            }`}
           >
             <input {...getInputProps()} />
 
             <div className="flex flex-col items-center gap-4 py-4">
-              <div className="text-sm text-zinc-400 text-center">
+              <div className="text-sm text-center">
                 {isDragActive && (
                   <span className="text-[#2868A0] font-bold text-lg">Solte as imagens aqui</span>
                 )}
               </div>
 
               {previewUrls.length > 0 ? (
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-2">
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 w-full">
                   {previewUrls.map((url, index) => (
-                    <div key={url} className="group relative overflow-hidden rounded-xl border border-zinc-800 bg-black">
+                    <div key={url} className={`group relative overflow-hidden rounded-xl border bg-black ${isDarkMode ? "border-zinc-800" : "border-zinc-200"}`}>
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={url}
@@ -395,7 +466,7 @@ export function MainScreen() {
                   ))}
                 </div>
               ) : (
-                <div className="rounded-xl bg-zinc-900/40 px-4 py-10 text-center text-sm text-zinc-400">
+                <div className={`rounded-xl px-4 py-10 text-center text-sm transition-colors ${isDarkMode ? "bg-zinc-900/40 text-zinc-400" : "bg-zinc-200/50 text-zinc-500"}`}>
                   Nenhuma imagem selecionada
                 </div>
               )}
