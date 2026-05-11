@@ -53,6 +53,8 @@ export function MainScreen() {
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
@@ -83,13 +85,15 @@ export function MainScreen() {
 
 
   // Load History
-  const fetchHistory = useCallback(async () => {
+  const fetchHistory = useCallback(async (page: number = 1) => {
     setHistoryLoading(true);
     try {
-      const res = await fetch("/api/history");
+      const res = await fetch(`/api/history?page=${page}`);
       if (res.ok) {
         const data = await res.json();
-        setHistory(data);
+        setHistory(data.history || []);
+        setTotalPages(data.totalPages || 1);
+        setCurrentPage(data.page || 1);
       }
     } catch (error) {
       console.error("Error fetching history:", error);
@@ -232,7 +236,7 @@ export function MainScreen() {
       });
       setFiles([]);
       setDescription("");
-      fetchHistory();
+      fetchHistory(1);
     } catch (error) {
       setStatus({ kind: "error", message: String(error) });
     }
@@ -586,6 +590,38 @@ export function MainScreen() {
               ))
             )}
           </div>
+
+          {totalPages > 1 && (
+            <div className="mt-6 flex items-center justify-between border-t border-zinc-800 pt-4 px-1">
+              <button
+                onClick={() => fetchHistory(currentPage - 1)}
+                disabled={currentPage === 1 || historyLoading}
+                className={`text-xs font-bold uppercase tracking-widest px-3 py-2 rounded-lg border transition-all disabled:opacity-30 ${
+                  isDarkMode 
+                  ? "bg-zinc-900 border-zinc-800 text-zinc-400 hover:bg-zinc-800" 
+                  : "bg-zinc-50 border-zinc-200 text-zinc-600 hover:bg-zinc-100"
+                }`}
+              >
+                Anterior
+              </button>
+              
+              <span className={`text-[10px] font-bold uppercase tracking-widest ${isDarkMode ? "text-zinc-500" : "text-zinc-400"}`}>
+                Página {currentPage} de {totalPages}
+              </span>
+
+              <button
+                onClick={() => fetchHistory(currentPage + 1)}
+                disabled={currentPage === totalPages || historyLoading}
+                className={`text-xs font-bold uppercase tracking-widest px-3 py-2 rounded-lg border transition-all disabled:opacity-30 ${
+                  isDarkMode 
+                  ? "bg-zinc-900 border-zinc-800 text-zinc-400 hover:bg-zinc-800" 
+                  : "bg-zinc-50 border-zinc-200 text-zinc-600 hover:bg-zinc-100"
+                }`}
+              >
+                Próxima
+              </button>
+            </div>
+          )}
         </section>
 
         <footer className="pt-2 text-center text-xs text-zinc-500">

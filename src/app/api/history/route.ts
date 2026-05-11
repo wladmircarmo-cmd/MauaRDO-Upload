@@ -1,12 +1,16 @@
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { NextResponse } from "next/server";
 
-export async function GET() {
+export async function GET(request: Request) {
   const admin = createSupabaseAdminClient();
+  const { searchParams } = new URL(request.url);
+  const page = parseInt(searchParams.get("page") || "1");
+  const limit = 10;
+  const from = (page - 1) * limit;
+  const to = from + limit - 1;
 
   try {
-    // We query from rdo_atividades because that represents a "task launched"
-    const { data, error } = await admin
+    const { data, error, count } = await admin
       .from("rdo_atividades")
       .select(`
         id_atividade,
@@ -22,17 +26,16 @@ export async function GET() {
         rdo_imagens (
           id_imagem
         )
-      `)
+      `, { count: "exact" })
       .order("created_at", { ascending: false })
-      .limit(10);
+      .range(from, to);
 
     if (error) {
       console.error("Supabase error:", error);
       throw error;
     }
 
-    // Map to the structure expected by the frontend
-    const history = data.map((item: {
+    const history = (data || []).map((item: {
       id_atividade: number | string;
       tarefa: string;
       comentario: string | null;
@@ -67,7 +70,12 @@ export async function GET() {
       };
     });
 
-    return NextResponse.json(history);
+    return NextResponse.json({ 
+      history, 
+      total: count || 0,
+      page,
+      totalPages: Math.ceil((count || 0) / limit)
+    });
   } catch (error) {
     console.error("Error fetching history:", error);
     return NextResponse.json({ 
