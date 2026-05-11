@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import imageCompression from "browser-image-compression";
 import { normalizeWbs } from "@/lib/upload/validation";
+import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 type Status =
   | { kind: "idle" }
@@ -280,17 +281,34 @@ export function MainScreen() {
           </div>
 
           <div className="flex flex-col items-end gap-2">
-            <button
-              onClick={toggleTheme}
-              className={`p-2.5 rounded-xl border transition-all active:scale-95 ${
-                isDarkMode 
-                ? "bg-zinc-900 border-zinc-700 text-zinc-100 hover:bg-zinc-800" 
-                : "bg-white border-zinc-200 text-zinc-800 hover:bg-zinc-100 shadow-sm"
-              }`}
-              title={isDarkMode ? "Mudar para modo claro" : "Mudar para modo escuro"}
-            >
-              {isDarkMode ? <SunIcon /> : <MoonIcon />}
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={async () => {
+                  const supabase = createSupabaseBrowserClient();
+                  await supabase.auth.signOut();
+                  window.location.reload();
+                }}
+                className={`p-2.5 rounded-xl border transition-all active:scale-95 ${
+                  isDarkMode 
+                  ? "bg-zinc-900 border-zinc-700 text-zinc-100 hover:bg-zinc-800" 
+                  : "bg-white border-zinc-200 text-zinc-800 hover:bg-zinc-100 shadow-sm"
+                }`}
+                title="Sair do sistema"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+              </button>
+              <button
+                onClick={toggleTheme}
+                className={`p-2.5 rounded-xl border transition-all active:scale-95 ${
+                  isDarkMode 
+                  ? "bg-zinc-900 border-zinc-700 text-zinc-100 hover:bg-zinc-800" 
+                  : "bg-white border-zinc-200 text-zinc-800 hover:bg-zinc-100 shadow-sm"
+                }`}
+                title={isDarkMode ? "Mudar para modo claro" : "Mudar para modo escuro"}
+              >
+                {isDarkMode ? <SunIcon /> : <MoonIcon />}
+              </button>
+            </div>
           </div>
         </header>
 
