@@ -1,36 +1,18 @@
 import { NextResponse } from "next/server";
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { getExternalOptions } from "@/lib/external-api";
 
 export async function GET() {
-  const admin = createSupabaseAdminClient();
-
   try {
-    // Fetch unique CCs
-    const { data: ccs, error: ccError } = await admin
-      .from("rdo_cc")
-      .select("cc, descriçãocc")
-      .order("cc");
-
-    if (ccError) throw ccError;
-
-    // Fetch unique OSs
-    const { data: oss, error: osError } = await admin
-      .from("eap-tab")
-      .select("OS")
-      .not("OS", "is", null)
-      .order("OS");
-
-    if (osError) throw osError;
-
-    // Unique OS values
-    const uniqueOss = Array.from(new Set(oss.map((item: { OS: string | null }) => item.OS))).filter(Boolean).sort();
-
+    const { ccs, oss } = await getExternalOptions();
+    
     return NextResponse.json({
       ccs: ccs || [],
-      oss: uniqueOss,
+      oss: oss || [],
     });
   } catch (error: unknown) {
-    console.error("Error fetching options:", error);
-    return NextResponse.json({ error: error instanceof Error ? error.message : String(error) }, { status: 500 });
+    console.error("Error fetching options from external API:", error);
+    return NextResponse.json({ 
+      error: error instanceof Error ? error.message : String(error) 
+    }, { status: 500 });
   }
 }
