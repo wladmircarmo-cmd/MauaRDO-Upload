@@ -125,7 +125,7 @@ export async function getExternalOptions(): Promise<{
     // Filtrar CCs com data_cadastro > '2026-01' e status = 'Em Progresso'
     const filteredCcs = uniqueCcs.filter((cc: CCItem | undefined): cc is CCItem => {
       if (!cc || !cc.data_cadastro) return false;
-      if ((cc as any).status !== 'Em Progresso') return false;
+      if ((cc as CCItem & { status?: string }).status !== 'Em Progresso') return false;
       const startDate = new Date(cc.data_cadastro as string);
       const cutoffDate = new Date('2026-01-01');
       return startDate > cutoffDate;
