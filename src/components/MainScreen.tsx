@@ -5,6 +5,7 @@ import { useDropzone } from "react-dropzone";
 import imageCompression from "browser-image-compression";
 import { normalizeWbs } from "@/lib/upload/validation";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { CCItem } from "@/lib/external-api";
 
 type Status =
   | { kind: "idle" }
@@ -41,7 +42,7 @@ export function MainScreen() {
   const [wbs, setWbs] = useState<string>("");
   const [description, setDescription] = useState<string>("");
   const [cc, setCc] = useState<string>("");
-  const [ccOptions, setCcOptions] = useState<{ cc: string, descriçãocc: string }[]>([]);
+  const [ccOptions, setCcOptions] = useState<CCItem[]>([]);
   const [os, setOs] = useState<string>("");
   const [date, setDate] = useState<string>(new Date().toISOString().split("T")[0]);
   const [wbsList, setWbsList] = useState<{ wbs: string, subtask?: string, os?: string, item?: string, codAtiv?: string }[]>([]);
@@ -108,7 +109,7 @@ export function MainScreen() {
         if (optRes.ok) {
           const data = await optRes.json();
           setCcOptions(data.ccs || []);
-          if (data.ccs?.length > 0) setCc(data.ccs[0].cc);
+          if (data.ccs?.length > 0) setCc(String(data.ccs[0].cod_ccusto));
         }
 
         // Load all Tasks
@@ -340,8 +341,8 @@ export function MainScreen() {
                 <option>Carregando...</option>
               ) : (
                 ccOptions.map((item) => (
-                  <option key={item.cc} value={item.cc}>
-                    {item.cc} - {item.descriçãocc}
+                  <option key={item.cod_ccusto} value={item.cod_ccusto}>
+                    {item.descr_ccusto} - {item.cod_ccusto}
                   </option>
                 ))
               )}
@@ -362,23 +363,7 @@ export function MainScreen() {
         </section>
 
         <section className={`rounded-2xl border p-5 transition-colors ${isDarkMode ? "border-zinc-800 bg-zinc-950/60" : "border-zinc-200 bg-white shadow-sm"}`}>
-          <label className={`text-sm font-medium ${isDarkMode ? "text-zinc-200" : "text-zinc-700"}`}>OS (Ordem de Serviço)</label>
-          <input
-            type="text"
-            value={os}
-            disabled
-            className={`mt-2 w-full rounded-xl border px-3 py-2 text-sm outline-none cursor-not-allowed transition-colors ${isDarkMode
-              ? "border-zinc-700 bg-zinc-900/50 text-zinc-400"
-              : "border-zinc-200 bg-zinc-100 text-zinc-500"
-              }`}
-          />
-          <p className="mt-1 text-[10px] text-zinc-500 uppercase tracking-tight">
-            Vinculado automaticamente à tarefa
-          </p>
-        </section>
-
-        <section className={`rounded-2xl border p-5 transition-colors ${isDarkMode ? "border-zinc-800 bg-zinc-950/60" : "border-zinc-200 bg-white shadow-sm"}`}>
-          <label className={`text-sm font-medium ${isDarkMode ? "text-zinc-200" : "text-zinc-700"}`}>TAREFA</label>
+          <label className={`text-sm font-medium ${isDarkMode ? "text-zinc-200" : "text-zinc-700"}`}>ATIVIDADE</label>
           <select
             value={wbs}
             onChange={(e) => {
@@ -409,6 +394,24 @@ export function MainScreen() {
             Será salvo como: <span className="text-zinc-200">{normalizeWbs(wbs)}</span>
           </p>
         </section>
+
+        <section className={`rounded-2xl border p-5 transition-colors ${isDarkMode ? "border-zinc-800 bg-zinc-950/60" : "border-zinc-200 bg-white shadow-sm"}`}>
+          <label className={`text-sm font-medium ${isDarkMode ? "text-zinc-200" : "text-zinc-700"}`}>OS (Ordem de Serviço)</label>
+          <input
+            type="text"
+            value={os}
+            disabled
+            className={`mt-2 w-full rounded-xl border px-3 py-2 text-sm outline-none cursor-not-allowed transition-colors ${isDarkMode
+              ? "border-zinc-700 bg-zinc-900/50 text-zinc-400"
+              : "border-zinc-200 bg-zinc-100 text-zinc-500"
+              }`}
+          />
+          <p className="mt-1 text-[10px] text-zinc-500 uppercase tracking-tight">
+            Vinculado automaticamente à tarefa
+          </p>
+        </section>
+
+        
 
         <section className={`rounded-2xl border p-5 transition-colors ${isDarkMode ? "border-zinc-800 bg-zinc-950/60" : "border-zinc-200 bg-white shadow-sm"}`}>
           <label className={`text-sm font-medium ${isDarkMode ? "text-zinc-200" : "text-zinc-700"}`}>DESCRIÇÃO</label>
