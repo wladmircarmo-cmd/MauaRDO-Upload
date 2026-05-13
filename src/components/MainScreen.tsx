@@ -132,7 +132,7 @@ export function MainScreen() {
         if (optRes.ok) {
           const data = await optRes.json();
           setCcOptions(data.ccs || []);
-          
+
           // Se o CC atual não estiver na nova lista, seleciona o primeiro disponível
           const currentCcStillExists = data.ccs?.some((item: CCItem) => String(item.cod_ccusto) === cc);
           if (!currentCcStillExists && data.ccs?.length > 0) {
@@ -417,11 +417,10 @@ export function MainScreen() {
                   <button
                     key={type.id}
                     onClick={() => setDateFilterType(type.id as 'active' | 'start' | 'end')}
-                    className={`px-2 py-0.5 text-[9px] font-bold uppercase tracking-tighter rounded-md border transition-all ${
-                      dateFilterType === type.id 
-                        ? "bg-[#2868A0] border-[#2868A0] text-white" 
-                        : isDarkMode ? "bg-zinc-900 border-zinc-700 text-zinc-400 hover:bg-zinc-800" : "bg-zinc-100 border-zinc-200 text-zinc-500 hover:bg-zinc-200"
-                    }`}
+                    className={`px-2 py-0.5 text-[9px] font-bold uppercase tracking-tighter rounded-md border transition-all ${dateFilterType === type.id
+                      ? "bg-[#2868A0] border-[#2868A0] text-white"
+                      : isDarkMode ? "bg-zinc-900 border-zinc-700 text-zinc-400 hover:bg-zinc-800" : "bg-zinc-100 border-zinc-200 text-zinc-500 hover:bg-zinc-200"
+                      }`}
                   >
                     {type.label}
                   </button>
@@ -495,7 +494,7 @@ export function MainScreen() {
           </p>
         </section>
 
-        
+
 
         <section className={`rounded-2xl border p-5 transition-colors ${isDarkMode ? "border-zinc-800 bg-zinc-950/60" : "border-zinc-200 bg-white shadow-sm"}`}>
           <label className={`text-sm font-medium ${isDarkMode ? "text-zinc-200" : "text-zinc-700"}`}>DESCRIÇÃO</label>
@@ -511,10 +510,9 @@ export function MainScreen() {
           />
           {/* Aviso de Atividade já lançada */}
           {history.find(h => h.cc === cc && h.data === date)?.rdo_atividades.some(a => normalizeWbs(a.wbs) === normalizeWbs(wbs)) && (
-            <div className={`mt-3 flex items-center gap-2 rounded-lg border px-3 py-2 animate-in fade-in slide-in-from-top-1 ${
-              isDarkMode ? "bg-amber-500/10 border-amber-500/20 text-amber-500" : "bg-amber-50 border-amber-200 text-amber-600"
-            }`}>
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <div className={`mt-3 flex items-center gap-2 rounded-lg border px-3 py-2 animate-in fade-in slide-in-from-top-1 ${isDarkMode ? "bg-amber-500/10 border-amber-500/20 text-amber-500" : "bg-amber-50 border-amber-200 text-amber-600"
+              }`}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
               <span className="text-[10px] font-bold uppercase tracking-tight">Esta atividade já possui registros para hoje. Novas fotos serão adicionadas.</span>
             </div>
           )}
@@ -522,25 +520,27 @@ export function MainScreen() {
         <section className={`rounded-2xl border p-5 transition-colors ${isDarkMode ? "border-zinc-800 bg-zinc-950/60" : "border-zinc-200 bg-white shadow-sm"}`}>
           <div className="flex flex-col gap-4 mb-4">
             <div className="flex items-center justify-between">
-              <p className={`text-sm font-medium uppercase tracking-wider ${isDarkMode ? "text-zinc-200" : "text-zinc-700"}`}>Imagens</p>
+              <p className={`text-base font-black uppercase tracking-tight ${isDarkMode ? "text-white" : "text-zinc-900"}`}>Imagens</p>
               {(() => {
                 const alreadyUploaded = history.find(h => h.cc === cc && h.data === date)?.rdo_atividades.find(a => normalizeWbs(a.wbs) === normalizeWbs(wbs))?.fotos || 0;
                 return (
-                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${isDarkMode ? "bg-zinc-800 text-zinc-400" : "bg-zinc-100 text-zinc-500"}`}>
+                  <span className={`text-sm font-black px-4 py-1.5 rounded-xl border ${
+                    isDarkMode ? "bg-[#2868A0]/10 border-[#2868A0]/30 text-[#2868A0]" : "bg-[#2868A0]/5 border-[#2868A0]/20 text-[#2868A0]"
+                  }`}>
                     {alreadyUploaded}/4 ENVIADAS
                   </span>
                 );
               })()}
             </div>
-            
+
             {(() => {
               const alreadyUploaded = history.find(h => h.cc === cc && h.data === date)?.rdo_atividades.find(a => normalizeWbs(a.wbs) === normalizeWbs(wbs))?.fotos || 0;
               const remaining = 4 - alreadyUploaded;
-              
+
               if (remaining <= 0) {
                 return (
                   <div className={`flex items-center justify-center gap-2 p-4 rounded-xl border border-dashed ${isDarkMode ? "bg-rose-500/10 border-rose-500/20 text-rose-500" : "bg-rose-50 border-rose-200 text-rose-600"}`}>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
                     <span className="text-xs font-bold uppercase">Limite de 4 fotos atingido para esta atividade</span>
                   </div>
                 );
@@ -666,8 +666,8 @@ export function MainScreen() {
             disabled={status.kind === "loading"}
             className="rounded-2xl bg-[#2868A0] px-5 py-3 text-sm font-semibold text-white hover:bg-[#1f5f8c] disabled:opacity-60"
           >
-            {status.kind === "loading" 
-              ? status.message 
+            {status.kind === "loading"
+              ? status.message
               : history.find(h => h.cc === cc && h.data === date)?.rdo_atividades.some(a => normalizeWbs(a.wbs) === normalizeWbs(wbs))
                 ? "Atualizar RDO"
                 : "Enviar RDO"
@@ -687,16 +687,18 @@ export function MainScreen() {
         </section>
 
         <section className={`rounded-2xl border p-5 transition-colors ${isDarkMode ? "border-zinc-800 bg-zinc-950/60" : "border-zinc-200 bg-white shadow-sm"}`}>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className={`text-sm font-medium uppercase tracking-wider ${isDarkMode ? "text-zinc-200" : "text-zinc-700"}`}>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className={`text-2xl font-black uppercase tracking-tight ${isDarkMode ? "text-white" : "text-zinc-900"}`}>
               Lançamentos Recentes
             </h2>
             <button
               onClick={() => fetchHistory(1)}
               disabled={historyLoading}
-              className={`text-[10px] uppercase font-bold tracking-widest hover:underline disabled:opacity-50 ${isDarkMode ? "text-zinc-500" : "text-zinc-400"}`}
+              className={`text-xs uppercase font-black tracking-widest hover:underline disabled:opacity-50 px-4 py-2 rounded-xl border ${
+                isDarkMode ? "text-zinc-400 border-zinc-800 bg-zinc-900" : "text-zinc-500 border-zinc-200 bg-zinc-50"
+              }`}
             >
-              {historyLoading ? "Atualizando..." : "Atualizar"}
+              {historyLoading ? "Atualizando..." : "Atualizar Lista"}
             </button>
           </div>
 
@@ -710,41 +712,41 @@ export function MainScreen() {
                 <div
                   key={item.id}
                   onClick={() => setSelectedHistoryItem(item)}
-                  className={`flex flex-col gap-2 rounded-xl border p-3 transition-all cursor-pointer hover:scale-[1.02] active:scale-95 ${isDarkMode 
+                  className={`flex flex-col gap-4 rounded-2xl border p-6 transition-all cursor-pointer hover:scale-[1.01] active:scale-95 ${isDarkMode 
                     ? "bg-zinc-900/40 border-zinc-800 hover:bg-zinc-900/60 hover:border-zinc-700" 
                     : "bg-zinc-50 border-zinc-100 shadow-sm hover:bg-white hover:border-zinc-200 hover:shadow-md"
                     }`}
                 >
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <p className={`text-xs font-bold ${isDarkMode ? "text-zinc-300" : "text-zinc-800"}`}>
-                        OS {item.os}
-                      </p>
-                      <p className="text-[10px] text-zinc-500">
-                        {item.data ? new Date(item.data + 'T12:00:00').toLocaleDateString('pt-BR') : '---'} • CC {item.cc}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${isDarkMode ? "bg-zinc-800 text-zinc-400" : "bg-white text-zinc-500 border border-zinc-100"}`}>
-                        {item.totalFotos || 0} FOTOS
-                      </div>
-                      {item.rdo_atividades.some(a => a.editado) && (
-                        <span className="rounded-lg bg-amber-500/10 px-2 py-0.5 text-[9px] font-black text-amber-500 border border-amber-500/20">
-                          EDITADO
+                  <div className="flex items-start justify-between">
+                    <div className="flex flex-col gap-2">
+                      <div className="flex items-center gap-3">
+                        <span className={`text-xs font-black uppercase tracking-widest ${isDarkMode ? "text-[#2868A0]" : "text-[#2868A0]"}`}>
+                          CC {item.cc}
                         </span>
-                      )}
+                        <span className={`text-xs font-bold ${isDarkMode ? "text-zinc-500" : "text-zinc-400"}`}>
+                          • {item.data ? new Date(item.data + 'T12:00:00').toLocaleDateString('pt-BR') : '---'}
+                        </span>
+                      </div>
+                      <h3 className={`text-lg font-black tracking-tight ${isDarkMode ? "text-zinc-100" : "text-zinc-900"}`}>
+                        OS {item.os}
+                      </h3>
+                    </div>
+                    <div className={`flex items-center gap-2 rounded-xl px-4 py-2 border ${
+                      isDarkMode ? "bg-zinc-950 border-zinc-800 text-[#2868A0]" : "bg-white border-zinc-100 text-[#2868A0]"
+                    }`}>
+                      <span className="text-sm font-black">{item.totalFotos}</span>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                     </div>
                   </div>
 
-                  <div className="flex flex-col gap-1">
-                    {item.rdo_atividades?.map((atv, idx) => (
-                      <div key={idx} className="flex gap-2 items-baseline justify-between">
-                        <div className="flex gap-2 items-baseline overflow-hidden">
-                          <span className="text-[10px] font-mono text-[#2868A0] font-bold shrink-0">{atv.wbs}</span>
-                          <span className={`text-[11px] truncate ${isDarkMode ? "text-zinc-400" : "text-zinc-600"}`}>{atv.descricao}</span>
-                        </div>
-                        <span className="text-[9px] font-bold text-zinc-400 shrink-0">{atv.fotos} FOT.</span>
-                      </div>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {item.rdo_atividades?.map((atv, i) => (
+                      <span key={i} className={`inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 text-[11px] font-black uppercase tracking-tighter ${
+                        isDarkMode ? "bg-zinc-800/50 border-zinc-700 text-zinc-400" : "bg-zinc-100 border-zinc-200 text-zinc-500"
+                      }`}>
+                        {atv.wbs}
+                        {atv.editado && <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]" />}
+                      </span>
                     ))}
                   </div>
                 </div>
@@ -790,96 +792,93 @@ export function MainScreen() {
 
       {/* Modal de Detalhes do Histórico */}
       {selectedHistoryItem && (
-        <div 
+        <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300"
           onClick={() => setSelectedHistoryItem(null)}
         >
-          <div 
-            className={`relative w-full max-w-lg overflow-hidden rounded-3xl border shadow-2xl transition-all animate-in zoom-in-95 duration-300 ${
-              isDarkMode ? "bg-zinc-900 border-zinc-800" : "bg-white border-zinc-200"
-            }`}
+          <div
+            className={`relative w-full max-w-4xl overflow-hidden rounded-[2.5rem] border shadow-[0_35px_60px_-15px_rgba(0,0,0,0.5)] transition-all animate-in zoom-in-95 duration-300 ${isDarkMode ? "bg-zinc-900 border-zinc-800" : "bg-white border-zinc-200"
+              }`}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header do Modal */}
-            <div className={`flex items-center justify-between border-b px-6 py-4 ${isDarkMode ? "border-zinc-800 bg-zinc-900/50" : "border-zinc-100 bg-zinc-50/50"}`}>
+            <div className={`flex items-center justify-between border-b px-10 py-8 ${isDarkMode ? "border-zinc-800 bg-zinc-900/50" : "border-zinc-100 bg-zinc-50/50"}`}>
               <div>
-                <h3 className={`text-lg font-bold ${isDarkMode ? "text-white" : "text-zinc-900"}`}>Detalhes do RDO</h3>
-                <p className="text-xs text-zinc-500 uppercase tracking-widest font-medium">Informações registradas</p>
+                <h3 className={`text-3xl font-black tracking-tight ${isDarkMode ? "text-white" : "text-zinc-900"}`}>Detalhes do RDO</h3>
+                <p className="text-sm text-zinc-500 uppercase tracking-[0.2em] font-bold mt-1">Informações registradas</p>
               </div>
-              <button 
+              <button
                 onClick={() => setSelectedHistoryItem(null)}
-                className={`flex h-10 w-10 items-center justify-center rounded-full transition-colors ${
-                  isDarkMode ? "hover:bg-zinc-800 text-zinc-400" : "hover:bg-zinc-100 text-zinc-500"
-                }`}
+                className={`flex h-14 w-14 items-center justify-center rounded-2xl transition-all hover:rotate-90 ${isDarkMode ? "bg-zinc-800 hover:bg-zinc-700 text-zinc-100" : "bg-zinc-100 hover:bg-zinc-200 text-zinc-800"
+                  }`}
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
               </button>
             </div>
 
             {/* Conteúdo do Modal */}
-            <div className="max-h-[70vh] overflow-y-auto p-6">
-              <div className="grid grid-cols-2 gap-6 mb-8">
-                <div className="flex flex-col gap-1">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Ordem de Serviço</span>
-                  <span className={`text-sm font-semibold ${isDarkMode ? "text-zinc-200" : "text-zinc-800"}`}>OS {selectedHistoryItem.os}</span>
+            <div className="max-h-[85vh] overflow-y-auto p-12">
+              <div className="grid grid-cols-2 gap-10 mb-12">
+                <div className="flex flex-col gap-2">
+                  <span className="text-xs font-black uppercase tracking-widest text-[#2868A0]">Ordem de Serviço</span>
+                  <span className={`text-2xl font-bold ${isDarkMode ? "text-white" : "text-zinc-900"}`}>OS {selectedHistoryItem.os}</span>
                 </div>
-                <div className="flex flex-col gap-1">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Data do RDO</span>
-                  <span className={`text-sm font-semibold ${isDarkMode ? "text-zinc-200" : "text-zinc-800"}`}>
+                <div className="flex flex-col gap-2">
+                  <span className="text-xs font-black uppercase tracking-widest text-[#2868A0]">Data do RDO</span>
+                  <span className={`text-2xl font-bold ${isDarkMode ? "text-white" : "text-zinc-900"}`}>
                     {selectedHistoryItem.data ? new Date(selectedHistoryItem.data + 'T12:00:00').toLocaleDateString('pt-BR') : '---'}
                   </span>
                 </div>
-                <div className="flex flex-col gap-1">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Centro de Custo</span>
-                  <span className={`text-sm font-semibold ${isDarkMode ? "text-zinc-200" : "text-zinc-800"}`}>CC {selectedHistoryItem.cc}</span>
+                <div className="flex flex-col gap-2">
+                  <span className="text-xs font-black uppercase tracking-widest text-[#2868A0]">Centro de Custo</span>
+                  <span className={`text-2xl font-bold ${isDarkMode ? "text-white" : "text-zinc-900"}`}>CC {selectedHistoryItem.cc}</span>
                 </div>
-                <div className="flex flex-col gap-1">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Total de Fotos</span>
-                  <span className={`inline-flex w-fit rounded-full px-2 py-0.5 text-[10px] font-bold ${
-                    isDarkMode ? "bg-[#2868A0]/20 text-[#2868A0]" : "bg-[#2868A0]/10 text-[#2868A0]"
-                  }`}>
+                <div className="flex flex-col gap-2">
+                  <span className="text-xs font-black uppercase tracking-widest text-[#2868A0]">Total de Fotos</span>
+                  <span className={`inline-flex w-fit rounded-xl px-4 py-1.5 text-xs font-black ${isDarkMode ? "bg-[#2868A0]/20 text-[#2868A0] border border-[#2868A0]/30" : "bg-[#2868A0]/10 text-[#2868A0] border border-[#2868A0]/20"
+                    }`}>
                     {selectedHistoryItem.totalFotos} FOTOS ENVIADAS
                   </span>
                 </div>
               </div>
 
-              <div className="flex flex-col gap-4">
-                <h4 className={`text-xs font-bold uppercase tracking-widest ${isDarkMode ? "text-zinc-400" : "text-zinc-500"}`}>Atividades Relacionadas</h4>
+              <div className="flex flex-col gap-6">
+                <h4 className={`text-sm font-black uppercase tracking-[0.2em] ${isDarkMode ? "text-zinc-400" : "text-zinc-500"}`}>Atividades Relacionadas</h4>
                 <div className="flex flex-col gap-3">
                   {selectedHistoryItem.rdo_atividades?.map((atv, idx) => (
-                    <div 
-                      key={idx} 
-                      onClick={() => atv.urls && atv.urls.length > 0 && setViewingPhotos(atv.urls)}
-                      className={`flex flex-col gap-2 rounded-2xl border p-4 transition-all ${
-                        atv.urls && atv.urls.length > 0 ? "cursor-pointer hover:border-[#2868A0] hover:bg-[#2868A0]/5" : ""
-                      } ${
-                        isDarkMode ? "bg-zinc-800/30 border-zinc-800" : "bg-zinc-50 border-zinc-100"
-                      }`}
+                    <div
+                      key={idx}
+                      className={`flex flex-col gap-4 rounded-3xl border p-8 transition-colors ${isDarkMode ? "bg-zinc-800/40 border-zinc-700" : "bg-zinc-50 border-zinc-100"
+                        }`}
                     >
-                      <div className="flex justify-between items-start gap-4">
-                        <div className="flex flex-col gap-1 overflow-hidden">
-                          <div className="flex items-center gap-2">
-                            <span className="text-[10px] font-mono font-bold text-[#2868A0]">{atv.wbs}</span>
-                            {atv.editado && (
-                              <span className="text-[8px] font-black bg-amber-500/10 text-amber-500 px-1 rounded border border-amber-500/20">EDITADO</span>
-                            )}
-                          </div>
-                          <span className={`text-sm font-medium leading-tight ${isDarkMode ? "text-zinc-200" : "text-zinc-800"}`}>
-                            {atv.descricao || "Sem descrição adicional"}
-                          </span>
-                          {atv.urls && atv.urls.length > 0 && (
-                            <span className="text-[9px] font-bold text-[#2868A0] uppercase mt-1 flex items-center gap-1">
-                              <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-                              Clique para ver as fotos
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex flex-col gap-2">
+                          <span className={`text-xl font-black ${isDarkMode ? "text-[#2868A0]" : "text-[#2868A0]"}`}>{atv.wbs}</span>
+                          {atv.editado && (
+                            <span className="w-fit rounded-md bg-amber-500/20 px-2 py-0.5 text-[10px] font-black uppercase tracking-tighter text-amber-500 border border-amber-500/30">
+                              Editado
                             </span>
                           )}
                         </div>
-                        <span className={`shrink-0 rounded-lg px-2 py-1 text-[10px] font-bold ${
-                          isDarkMode ? "bg-zinc-800 text-zinc-500" : "bg-white text-zinc-400 border border-zinc-100"
-                        }`}>
+                        <span className={`text-xs font-black uppercase tracking-widest px-3 py-1 rounded-lg ${isDarkMode ? "bg-zinc-900 text-zinc-500" : "bg-white text-zinc-400 border border-zinc-100"
+                          }`}>
                           {atv.fotos} FOT.
                         </span>
                       </div>
+
+                      <p className={`text-lg font-medium leading-relaxed ${isDarkMode ? "text-zinc-300" : "text-zinc-600"}`}>
+                        {atv.descricao || "Sem comentário"}
+                      </p>
+
+                      {atv.urls && atv.urls.length > 0 && (
+                        <button
+                          onClick={() => setViewingPhotos(atv.urls)}
+                          className="w-fit text-[11px] font-black uppercase tracking-widest text-[#2868A0] hover:underline flex items-center gap-2 mt-2"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
+                          Ver fotos desta atividade
+                        </button>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -887,10 +886,10 @@ export function MainScreen() {
             </div>
 
             {/* Footer do Modal */}
-            <div className={`p-4 text-center ${isDarkMode ? "bg-zinc-900/80" : "bg-zinc-50/80"}`}>
-              <button 
+            <div className={`border-t p-10 ${isDarkMode ? "border-zinc-800 bg-zinc-900/50" : "border-zinc-100 bg-zinc-50/50"}`}>
+              <button
                 onClick={() => setSelectedHistoryItem(null)}
-                className="w-full rounded-2xl bg-[#2868A0] py-3 text-sm font-bold text-white transition-all hover:bg-[#1f5f8c] active:scale-[0.98]"
+                className="w-full rounded-[1.5rem] bg-[#2868A0] py-6 text-xl font-black text-white shadow-lg shadow-[#2868A0]/30 transition-all hover:bg-[#1f5f8c] active:scale-95"
               >
                 Fechar Detalhes
               </button>
@@ -901,18 +900,18 @@ export function MainScreen() {
 
       {/* Modal de Galeria de Fotos */}
       {viewingPhotos && (
-        <div 
+        <div
           className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-in fade-in duration-300"
           onClick={() => setViewingPhotos(null)}
         >
-          <button 
+          <button
             onClick={() => setViewingPhotos(null)}
             className="absolute right-6 top-6 z-10 flex h-12 w-12 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition-all active:scale-95"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
           </button>
 
-          <div 
+          <div
             className="w-full max-w-4xl max-h-[85vh] overflow-y-auto px-2"
             onClick={(e) => e.stopPropagation()}
           >
@@ -920,8 +919,8 @@ export function MainScreen() {
               {viewingPhotos.map((url, i) => (
                 <div key={i} className="group relative overflow-hidden rounded-2xl border border-white/10 bg-zinc-900 shadow-2xl">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img 
-                    src={url} 
+                  <img
+                    src={url}
                     alt={`Foto ${i + 1}`}
                     className="w-full h-auto object-contain max-h-[60vh] transition-transform duration-500 group-hover:scale-105"
                   />
@@ -932,7 +931,7 @@ export function MainScreen() {
               ))}
             </div>
           </div>
-          
+
           <p className="absolute bottom-10 text-white/40 text-[10px] uppercase font-bold tracking-widest">
             Clique fora para fechar a galeria
           </p>
