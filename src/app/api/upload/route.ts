@@ -27,6 +27,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "missing_wbs" }, { status: 400 });
     }
 
+    if (files.length === 0) {
+      return NextResponse.json({ error: "Nenhuma foto selecionada" }, { status: 400 });
+    }
+
     for (const file of files) {
       assertValidFile(file);
     }
@@ -131,9 +135,18 @@ export async function POST(request: Request) {
 
       // 4. Upload Files and Create Images
       const results = [];
-      for (const file of files) {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const uploadType = formData.get(`uploadType_${i}`) as string | null;
+
+        if (!uploadType || (uploadType !== "camera" && uploadType !== "gallery")) {
+          console.error(`Invalid upload type for file ${i}: ${uploadType}`);
+          continue;
+        }
+
+        const prefix = uploadType === "camera" ? "cam" : "gal";
         const fileExt = file.name.split(".").pop();
-        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 7)}.${fileExt}`;
+        const fileName = `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 7)}.${fileExt}`;
         const supabasePath = `${normalizedWbs}/${fileName}`;
 
         const { error: uploadError } = await admin.storage
@@ -150,9 +163,10 @@ export async function POST(request: Request) {
           .from("rdo_imagens")
           .insert({
             id_atividade,
-            imagem_url: publicUrl
+            imagem_url: publicUrl,
+            tipo_envio: uploadType
           });
-        
+
         if (!imgError) {
           results.push(supabasePath);
         }

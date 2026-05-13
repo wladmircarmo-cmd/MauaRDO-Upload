@@ -22,6 +22,11 @@ interface HistoryItem {
   totalFotos: number;
 }
 
+interface FileWithType {
+  file: File;
+  uploadType: "camera" | "gallery";
+}
+
 const SunIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="4" /><path d="M12 2v2" /><path d="M12 20v2" /><path d="m4.93 4.93 1.41 1.41" /><path d="m17.66 17.66 1.41 1.41" /><path d="M2 12h2" /><path d="M20 12h2" /><path d="m6.34 17.66-1.41 1.41" /><path d="m19.07 4.93-1.41 1.41" /></svg>
 );
@@ -45,9 +50,10 @@ export function MainScreen() {
   const [ccOptions, setCcOptions] = useState<CCItem[]>([]);
   const [os, setOs] = useState<string>("");
   const [date, setDate] = useState<string>(new Date().toISOString().split("T")[0]);
-  const [wbsList, setWbsList] = useState<{ wbs: string, subtask?: string, os?: string, item?: string, codAtiv?: string }[]>([]);
+  const [selectedTaskId, setSelectedTaskId] = useState<string | number>("");
+  const [wbsList, setWbsList] = useState<{ id_eap: string | number, wbs: string, subtask?: string, os?: string, item?: string, codAtiv?: string, cod_os?: string, descr_os?: string, cod_atividade?: string, descr_atividade?: string, descricao?: string }[]>([]);
   const [wbsLoading, setWbsLoading] = useState(false);
-  const [files, setFiles] = useState<File[]>([]);
+  const [files, setFiles] = useState<FileWithType[]>([]);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [status, setStatus] = useState<Status>({ kind: "idle" });
   const [optionsLoading, setOptionsLoading] = useState(true);
@@ -75,7 +81,7 @@ export function MainScreen() {
   };
 
   useEffect(() => {
-    const urls = files.map((f) => URL.createObjectURL(f));
+    const urls = files.map((f) => URL.createObjectURL(f.file));
     setPreviewUrls(urls);
     return () => urls.forEach((url) => URL.revokeObjectURL(url));
   }, [files]);
@@ -112,48 +118,67 @@ export function MainScreen() {
           if (data.ccs?.length > 0) setCc(String(data.ccs[0].cod_ccusto));
         }
 
-        // Load all Tasks
-        setWbsLoading(true);
-        const taskRes = await fetch("/api/options/tasks");
-        if (taskRes.ok) {
-          const tasks = await taskRes.json();
-          const formattedTasks = tasks.map((t: { WBS: string, Subtask: string, OS: string, Item: string, "Cod Ativ": string }) => ({
-            wbs: t.WBS,
-            subtask: t.Subtask,
-            os: t.OS,
-            item: t.Item,
-            codAtiv: t["Cod Ativ"]
-          }));
-          setWbsList(formattedTasks);
-          if (formattedTasks.length > 0) {
-            setWbs(formattedTasks[0].wbs);
-            setOs(formattedTasks[0].os || "");
-          }
-        }
-
         // Fetch History
         fetchHistory();
       } catch (error) {
         console.error("Error initializing options:", error);
       } finally {
         setOptionsLoading(false);
-        setWbsLoading(false);
       }
     }
     init();
   }, [fetchHistory]);
 
+  // Load Tasks when CC changes
+  useEffect(() => {
+    async function loadTasks() {
+      if (!cc) return;
+      try {
+        setWbsLoading(true);
+        const taskRes = await fetch(`/api/options/tasks?cc=${cc}`);
+        if (taskRes.ok) {
+          const tasks = await taskRes.json();
+          const formattedTasks = tasks.map((t: { id_eap: string | number, wbs: string, subtask?: string, os?: string, item?: string, codAtiv?: string, cod_os?: string, descr_os?: string, cod_atividade?: string, descr_atividade?: string, descricao?: string }) => ({
+            id_eap: t.id_eap,
+            wbs: t.wbs,
+            subtask: t.subtask,
+            os: t.os,
+            item: t.item,
+            codAtiv: t.codAtiv,
+            cod_os: t.cod_os,
+            descr_os: t.descr_os,
+            cod_atividade: t.cod_atividade,
+            descr_atividade: t.descr_atividade,
+            descricao: t.descricao
+          }));
+          setWbsList(formattedTasks);
+          if (formattedTasks.length > 0) {
+            setSelectedTaskId(formattedTasks[0].id_eap);
+            setWbs(formattedTasks[0].wbs);
+            setOs(formattedTasks[0].os || "");
+          }
+        }
+      } catch (error) {
+        console.error("Error loading tasks:", error);
+      } finally {
+        setWbsLoading(false);
+      }
+    }
+    loadTasks();
+  }, [cc]);
 
-  const onDrop = useCallback((accepted: File[]) => {
+
+  const onDrop = useCallback((accepted: File[], type: "camera" | "gallery") => {
     setFiles((prev) => {
-      const next = [...prev, ...accepted].slice(0, 4);
+      const newFiles = accepted.map(f => ({ file: f, uploadType: type }));
+      const next = [...prev, ...newFiles].slice(0, 4);
       return next;
     });
   }, []);
 
-  const handleManualSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleManualSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>, type: "camera" | "gallery") => {
     if (e.target.files) {
-      onDrop(Array.from(e.target.files));
+      onDrop(Array.from(e.target.files), type);
     }
     // Clear input so same file can be selected again
     e.target.value = "";
@@ -163,8 +188,12 @@ export function MainScreen() {
     setFiles((prev) => prev.filter((_, i) => i !== index));
   }, []);
 
+  const handleDropzoneDrop = useCallback((acceptedFiles: File[]) => {
+    onDrop(acceptedFiles, "gallery"); // Dropzone defaults to gallery
+  }, [onDrop]);
+
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop,
+    onDrop: handleDropzoneDrop,
     multiple: true,
     maxFiles: 4,
     noClick: true,
@@ -201,14 +230,15 @@ export function MainScreen() {
       for (let i = 0; i < files.length; i++) {
         const progress = files.length > 1 ? ` (${i + 1}/${files.length})` : "";
         setStatus({ kind: "loading", message: `Comprimindo imagem${progress}...` });
-        const compressed = await compressInBrowser(files[i]);
+        const compressed = await compressInBrowser(files[i].file);
         compressedFiles.push(compressed);
       }
 
       setStatus({ kind: "loading", message: `Enviando ${files.length} fotos...` });
       const form = new FormData();
-      compressedFiles.forEach(blob => {
+      compressedFiles.forEach((blob, index) => {
         form.append("file", blob);
+        form.append(`uploadType_${index}`, files[index].uploadType);
       });
       form.set("wbs", wbs);
       form.set("description", description);
@@ -267,7 +297,7 @@ export function MainScreen() {
               <img
                 src="/images/logo.png"
                 alt="Estaleiro Mauá"
-                className={`h-30 w-auto rounded-xl border object-contain shadow-lg ${isDarkMode ? "border-white/10 shadow-black/30" : "border-zinc-200 shadow-zinc-200/50"
+                className={`h-15 w-auto rounded-xl border object-contain shadow-lg ${isDarkMode ? "border-white/10 shadow-black/30" : "border-zinc-200 shadow-zinc-200/50"
                   }`}
               />
               <div>
@@ -365,12 +395,15 @@ export function MainScreen() {
         <section className={`rounded-2xl border p-5 transition-colors ${isDarkMode ? "border-zinc-800 bg-zinc-950/60" : "border-zinc-200 bg-white shadow-sm"}`}>
           <label className={`text-sm font-medium ${isDarkMode ? "text-zinc-200" : "text-zinc-700"}`}>ATIVIDADE</label>
           <select
-            value={wbs}
+            value={selectedTaskId}
             onChange={(e) => {
-              const selectedWbs = e.target.value;
-              setWbs(selectedWbs);
-              const found = wbsList.find(t => t.wbs === selectedWbs);
-              if (found) setOs(found.os || "");
+              const id = e.target.value;
+              setSelectedTaskId(id);
+              const found = wbsList.find(t => String(t.id_eap) === String(id));
+              if (found) {
+                setWbs(found.wbs);
+                setOs(found.os || "");
+              }
             }}
             disabled={wbsLoading || wbsList.length === 0}
             className={`mt-2 w-full rounded-xl border px-3 py-2 text-sm outline-none focus:border-[#2868A0] disabled:cursor-not-allowed disabled:opacity-60 transition-colors ${isDarkMode
@@ -382,16 +415,16 @@ export function MainScreen() {
               <option>Carregando tarefas...</option>
             ) : wbsList.length > 0 ? (
               wbsList.map((entry) => (
-                <option key={entry.wbs} value={entry.wbs}>
-                  {entry.wbs} {entry.item ? `- ${entry.item}` : ""} {entry.codAtiv ? `(${entry.codAtiv})` : ""} - {entry.subtask || "Sem descrição"}
+                <option key={entry.id_eap} value={entry.id_eap}>
+                  {entry.wbs} - {entry.cod_atividade || "-"} - {entry.descr_atividade || entry.subtask || "-"}
                 </option>
               ))
             ) : (
-              <option>Nenhuma tarefa encontrada para esta OS</option>
+              <option key="no-tasks">Nenhuma tarefa encontrada para esta OS</option>
             )}
           </select>
           <p className="mt-2 text-xs text-zinc-400">
-            Será salvo como: <span className="text-zinc-200">{normalizeWbs(wbs)}</span>
+            Será salvo como: <span className="text-zinc-200">{wbs ? normalizeWbs(wbs) : "-"}</span>
           </p>
         </section>
 
@@ -399,7 +432,7 @@ export function MainScreen() {
           <label className={`text-sm font-medium ${isDarkMode ? "text-zinc-200" : "text-zinc-700"}`}>OS (Ordem de Serviço)</label>
           <input
             type="text"
-            value={os}
+            value={wbsList.find(t => t.wbs === wbs)?.cod_os ? `${wbsList.find(t => t.wbs === wbs)?.cod_os} - ${wbsList.find(t => t.wbs === wbs)?.descr_os || os}` : os}
             disabled
             className={`mt-2 w-full rounded-xl border px-3 py-2 text-sm outline-none cursor-not-allowed transition-colors ${isDarkMode
               ? "border-zinc-700 bg-zinc-900/50 text-zinc-400"
@@ -460,7 +493,7 @@ export function MainScreen() {
             capture="environment"
             className="hidden"
             ref={cameraInputRef}
-            onChange={handleManualSelect}
+            onChange={(e) => handleManualSelect(e, "camera")}
           />
           <input
             type="file"
@@ -468,7 +501,7 @@ export function MainScreen() {
             multiple
             className="hidden"
             ref={galleryInputRef}
-            onChange={handleManualSelect}
+            onChange={(e) => handleManualSelect(e, "gallery")}
           />
 
           <div

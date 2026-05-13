@@ -1,29 +1,35 @@
 import { NextResponse } from "next/server";
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { getExternalWbsList } from "@/lib/external-api";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const os = searchParams.get("os");
+  const cc = searchParams.get("cc");
 
-  const admin = createSupabaseAdminClient();
+  console.log("Fetching tasks with params:", { os, cc });
 
   try {
-    let query = admin
-      .from("eap-tab")
-      .select("WBS, Subtask, OS, Item, \"Cod Ativ\"")
-      .not("WBS", "is", null)
-      .not("OS", "is", null)
-      .order("WBS");
+    const tasks = await getExternalWbsList();
 
-    if (os) {
-      query = query.eq("OS", os);
+    console.log("External API tasks count:", tasks.length);
+    console.log("Sample task:", tasks[0]);
+
+    let filteredTasks = tasks;
+
+    if (cc) {
+      console.log("Filtering by cod_ccusto:", cc);
+      filteredTasks = tasks.filter((t: any) => String(t.cod_ccusto) === cc);
     }
 
-    const { data: tasks, error } = await query;
+    if (os) {
+      console.log("Filtering by OS:", os);
+      filteredTasks = filteredTasks.filter((t: any) => String(t.OS || t.os) === os);
+    }
 
-    if (error) throw error;
+    console.log("Filtered tasks count:", filteredTasks.length);
+    console.log("Sample filtered task:", filteredTasks[0]);
 
-    return NextResponse.json(tasks || []);
+    return NextResponse.json(filteredTasks || []);
   } catch (error: unknown) {
     console.error("Error fetching tasks:", error);
     return NextResponse.json({ error: error instanceof Error ? error.message : String(error) }, { status: 500 });
