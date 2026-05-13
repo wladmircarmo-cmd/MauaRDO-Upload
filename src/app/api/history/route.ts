@@ -105,8 +105,8 @@ export async function GET(request: Request) {
       const fotoUrls = item.rdo_imagens?.map(img => img.imagem_url).filter(Boolean) || [];
       const fotoCount = fotoUrls.length;
       
-      const isEditado = item.updated_at && item.created_at && 
-                        Math.abs(new Date(item.updated_at).getTime() - new Date(item.created_at).getTime()) > 5000; // 5 segundos de margem
+      const isEditado = !!(item.updated_at && item.created_at && 
+                        Math.abs(new Date(item.updated_at).getTime() - new Date(item.created_at).getTime()) > 5000); // 5 segundos de margem
 
       if (existingAtiv) {
         existingAtiv.fotos += fotoCount;
