@@ -18,7 +18,7 @@ interface HistoryItem {
   data: string;
   cc: string;
   os: string;
-  rdo_atividades: { wbs: string; descricao: string; fotos: number; urls?: string[] }[];
+  rdo_atividades: { wbs: string; descricao: string; fotos: number; urls?: string[]; editado?: boolean }[];
   totalFotos: number;
 }
 
@@ -165,7 +165,7 @@ export function MainScreen() {
           if (formattedTasks.length > 0) {
             setSelectedTaskId(formattedTasks[0].id_eap);
             setWbs(formattedTasks[0].wbs);
-            setOs(formattedTasks[0].os || "");
+            setOs(formattedTasks[0].os || (formattedTasks[0] as any).cod_os || "");
           }
         }
       } catch (error) {
@@ -179,12 +179,15 @@ export function MainScreen() {
 
 
   const onDrop = useCallback((accepted: File[], type: "camera" | "gallery") => {
+    const alreadyUploaded = history.find(h => h.cc === cc && h.data === date)?.rdo_atividades.find(a => normalizeWbs(a.wbs) === normalizeWbs(wbs))?.fotos || 0;
+    const remaining = 4 - alreadyUploaded;
+
     setFiles((prev) => {
       const newFiles = accepted.map(f => ({ file: f, uploadType: type }));
-      const next = [...prev, ...newFiles].slice(0, 4);
+      const next = [...prev, ...newFiles].slice(0, remaining);
       return next;
     });
-  }, []);
+  }, [history, cc, date, wbs]);
 
   const handleManualSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>, type: "camera" | "gallery") => {
     if (e.target.files) {
@@ -205,7 +208,7 @@ export function MainScreen() {
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop: handleDropzoneDrop,
     multiple: true,
-    maxFiles: 4,
+    maxFiles: Math.max(0, 4 - (history.find(h => h.cc === cc && h.data === date)?.rdo_atividades.find(a => normalizeWbs(a.wbs) === normalizeWbs(wbs))?.fotos || 0)),
     noClick: true,
     accept: { "image/*": [] },
   });
@@ -433,7 +436,7 @@ export function MainScreen() {
               const found = wbsList.find(t => String(t.id_eap) === String(id));
               if (found) {
                 setWbs(found.wbs);
-                setOs(found.os || "");
+                setOs(found.os || (found as any).cod_os || "");
               }
             }}
             disabled={wbsLoading || wbsList.length === 0}
@@ -445,11 +448,14 @@ export function MainScreen() {
             {wbsLoading ? (
               <option>Carregando tarefas...</option>
             ) : wbsList.length > 0 ? (
-              wbsList.map((entry) => (
-                <option key={entry.id_eap} value={entry.id_eap}>
-                  {entry.wbs} - {entry.cod_atividade || "-"} - {entry.descr_atividade || entry.subtask || "-"}
-                </option>
-              ))
+              wbsList.map((entry) => {
+                const isLaunched = history.find(h => h.cc === cc && h.data === date)?.rdo_atividades.some(a => normalizeWbs(a.wbs) === normalizeWbs(entry.wbs));
+                return (
+                  <option key={entry.id_eap} value={entry.id_eap}>
+                    {isLaunched ? "📝 " : ""}{entry.wbs} - {entry.cod_atividade || "-"} - {entry.descr_atividade || entry.subtask || "-"}
+                  </option>
+                );
+              })
             ) : (
               <option key="no-tasks">Nenhuma tarefa encontrada para esta OS</option>
             )}
@@ -489,51 +495,97 @@ export function MainScreen() {
               : "border-zinc-200 bg-zinc-50 text-zinc-900"
               }`}
           />
+          {/* Aviso de Atividade já lançada */}
+          {history.find(h => h.cc === cc && h.data === date)?.rdo_atividades.some(a => normalizeWbs(a.wbs) === normalizeWbs(wbs)) && (
+            <div className={`mt-3 flex items-center gap-2 rounded-lg border px-3 py-2 animate-in fade-in slide-in-from-top-1 ${
+              isDarkMode ? "bg-amber-500/10 border-amber-500/20 text-amber-500" : "bg-amber-50 border-amber-200 text-amber-600"
+            }`}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <span className="text-[10px] font-bold uppercase tracking-tight">Esta atividade já possui registros para hoje. Novas fotos serão adicionadas.</span>
+            </div>
+          )}
         </section>
         <section className={`rounded-2xl border p-5 transition-colors ${isDarkMode ? "border-zinc-800 bg-zinc-950/60" : "border-zinc-200 bg-white shadow-sm"}`}>
           <div className="flex flex-col gap-4 mb-4">
-            <p className={`text-sm font-medium uppercase tracking-wider ${isDarkMode ? "text-zinc-200" : "text-zinc-700"}`}>Imagens</p>
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                type="button"
-                onClick={() => cameraInputRef.current?.click()}
-                className={`flex items-center justify-center gap-3 rounded-xl border py-4 text-lg font-bold transition active:scale-95 ${isDarkMode
-                  ? "bg-zinc-900 border-zinc-700 text-zinc-100 hover:bg-zinc-800"
-                  : "bg-zinc-100 border-zinc-200 text-zinc-800 hover:bg-zinc-200"
-                  }`}
-              >
-                <CameraIcon /> Câmera
-              </button>
-              <button
-                type="button"
-                onClick={() => galleryInputRef.current?.click()}
-                className={`flex items-center justify-center gap-3 rounded-xl border py-4 text-lg font-bold transition active:scale-95 ${isDarkMode
-                  ? "bg-zinc-900 border-zinc-700 text-zinc-100 hover:bg-zinc-800"
-                  : "bg-zinc-100 border-zinc-200 text-zinc-800 hover:bg-zinc-200"
-                  }`}
-              >
-                <GalleryIcon /> Galeria
-              </button>
+            <div className="flex items-center justify-between">
+              <p className={`text-sm font-medium uppercase tracking-wider ${isDarkMode ? "text-zinc-200" : "text-zinc-700"}`}>Imagens</p>
+              {(() => {
+                const alreadyUploaded = history.find(h => h.cc === cc && h.data === date)?.rdo_atividades.find(a => normalizeWbs(a.wbs) === normalizeWbs(wbs))?.fotos || 0;
+                return (
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${isDarkMode ? "bg-zinc-800 text-zinc-400" : "bg-zinc-100 text-zinc-500"}`}>
+                    {alreadyUploaded}/4 ENVIADAS
+                  </span>
+                );
+              })()}
             </div>
+            
+            {(() => {
+              const alreadyUploaded = history.find(h => h.cc === cc && h.data === date)?.rdo_atividades.find(a => normalizeWbs(a.wbs) === normalizeWbs(wbs))?.fotos || 0;
+              const remaining = 4 - alreadyUploaded;
+              
+              if (remaining <= 0) {
+                return (
+                  <div className={`flex items-center justify-center gap-2 p-4 rounded-xl border border-dashed ${isDarkMode ? "bg-rose-500/10 border-rose-500/20 text-rose-500" : "bg-rose-50 border-rose-200 text-rose-600"}`}>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    <span className="text-xs font-bold uppercase">Limite de 4 fotos atingido para esta atividade</span>
+                  </div>
+                );
+              }
+
+              return (
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => cameraInputRef.current?.click()}
+                    disabled={files.length >= remaining}
+                    className={`flex items-center justify-center gap-3 rounded-xl border py-4 text-lg font-bold transition active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed ${isDarkMode
+                      ? "bg-zinc-900 border-zinc-700 text-zinc-100 hover:bg-zinc-800"
+                      : "bg-zinc-100 border-zinc-200 text-zinc-800 hover:bg-zinc-200"
+                      }`}
+                  >
+                    <CameraIcon /> Câmera
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => galleryInputRef.current?.click()}
+                    disabled={files.length >= remaining}
+                    className={`flex items-center justify-center gap-3 rounded-xl border py-4 text-lg font-bold transition active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed ${isDarkMode
+                      ? "bg-zinc-900 border-zinc-700 text-zinc-100 hover:bg-zinc-800"
+                      : "bg-zinc-100 border-zinc-200 text-zinc-800 hover:bg-zinc-200"
+                      }`}
+                  >
+                    <GalleryIcon /> Galeria
+                  </button>
+                </div>
+              );
+            })()}
           </div>
 
-          {/* Hidden Inputs */}
-          <input
-            type="file"
-            accept="image/*"
-            capture="environment"
-            className="hidden"
-            ref={cameraInputRef}
-            onChange={(e) => handleManualSelect(e, "camera")}
-          />
-          <input
-            type="file"
-            accept="image/*"
-            multiple
-            className="hidden"
-            ref={galleryInputRef}
-            onChange={(e) => handleManualSelect(e, "gallery")}
-          />
+          {/* Hidden Inputs com limite dinâmico */}
+          {(() => {
+            const alreadyUploaded = history.find(h => h.cc === cc && h.data === date)?.rdo_atividades.find(a => normalizeWbs(a.wbs) === normalizeWbs(wbs))?.fotos || 0;
+            const remaining = 4 - alreadyUploaded;
+            return (
+              <>
+                <input
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  className="hidden"
+                  ref={cameraInputRef}
+                  onChange={(e) => handleManualSelect(e, "camera")}
+                />
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple={remaining > 1}
+                  className="hidden"
+                  ref={galleryInputRef}
+                  onChange={(e) => handleManualSelect(e, "gallery")}
+                />
+              </>
+            );
+          })()}
 
           <div
             {...getRootProps()}
@@ -581,11 +633,18 @@ export function MainScreen() {
               )}
             </div>
           </div>
-          {files.length > 0 && (
-            <p className="mt-2 text-center text-xs text-zinc-500">
-              {files.length} de 4 imagens selecionadas
-            </p>
-          )}
+          {(() => {
+            const alreadyUploaded = history.find(h => h.cc === cc && h.data === date)?.rdo_atividades.find(a => normalizeWbs(a.wbs) === normalizeWbs(wbs))?.fotos || 0;
+            const remaining = 4 - alreadyUploaded;
+            if (remaining > 0 && files.length > 0) {
+              return (
+                <p className="mt-2 text-center text-xs text-zinc-500">
+                  {files.length} de {remaining} {remaining === 1 ? "vaga disponível" : "vagas disponíveis"} selecionada(s)
+                </p>
+              );
+            }
+            return null;
+          })()}
         </section>
         <section className="flex flex-col gap-3">
           <button
@@ -593,7 +652,12 @@ export function MainScreen() {
             disabled={status.kind === "loading"}
             className="rounded-2xl bg-[#2868A0] px-5 py-3 text-sm font-semibold text-white hover:bg-[#1f5f8c] disabled:opacity-60"
           >
-            {status.kind === "loading" ? status.message : "Enviar RDO"}
+            {status.kind === "loading" 
+              ? status.message 
+              : history.find(h => h.cc === cc && h.data === date)?.rdo_atividades.some(a => normalizeWbs(a.wbs) === normalizeWbs(wbs))
+                ? "Atualizar RDO"
+                : "Enviar RDO"
+            }
           </button>
 
           {status.kind !== "idle" && status.kind !== "loading" && (
@@ -646,8 +710,15 @@ export function MainScreen() {
                         {item.data ? new Date(item.data + 'T12:00:00').toLocaleDateString('pt-BR') : '---'} • CC {item.cc}
                       </p>
                     </div>
-                    <div className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${isDarkMode ? "bg-zinc-800 text-zinc-400" : "bg-white text-zinc-500 border border-zinc-100"}`}>
-                      {item.totalFotos || 0} FOTOS
+                    <div className="flex items-center gap-2">
+                      <div className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${isDarkMode ? "bg-zinc-800 text-zinc-400" : "bg-white text-zinc-500 border border-zinc-100"}`}>
+                        {item.totalFotos || 0} FOTOS
+                      </div>
+                      {item.rdo_atividades.some(a => a.editado) && (
+                        <span className="rounded-lg bg-amber-500/10 px-2 py-0.5 text-[9px] font-black text-amber-500 border border-amber-500/20">
+                          EDITADO
+                        </span>
+                      )}
                     </div>
                   </div>
 
@@ -773,7 +844,12 @@ export function MainScreen() {
                     >
                       <div className="flex justify-between items-start gap-4">
                         <div className="flex flex-col gap-1 overflow-hidden">
-                          <span className="text-[10px] font-mono font-bold text-[#2868A0]">{atv.wbs}</span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-mono font-bold text-[#2868A0]">{atv.wbs}</span>
+                            {atv.editado && (
+                              <span className="text-[8px] font-black bg-amber-500/10 text-amber-500 px-1 rounded border border-amber-500/20">EDITADO</span>
+                            )}
+                          </div>
                           <span className={`text-sm font-medium leading-tight ${isDarkMode ? "text-zinc-200" : "text-zinc-800"}`}>
                             {atv.descricao || "Sem descrição adicional"}
                           </span>

@@ -16,6 +16,8 @@ export async function GET(request: Request) {
         id_atividade,
         tarefa,
         comentario,
+        created_at,
+        updated_at,
         rdo_os!inner (
           os,
           rdo!inner (
@@ -41,7 +43,7 @@ export async function GET(request: Request) {
       data: string;
       cc: string;
       os: string;
-      atividades: { wbs: string; descricao: string; fotos: number; urls: string[] }[];
+      atividades: { wbs: string; descricao: string; fotos: number; urls: string[]; editado: boolean }[];
       totalFotos: number;
     }
     interface RawHistoryItem {
@@ -101,15 +103,20 @@ export async function GET(request: Request) {
       const fotoUrls = item.rdo_imagens?.map(img => img.imagem_url).filter(Boolean) || [];
       const fotoCount = fotoUrls.length;
       
+      const isEditado = item.updated_at && item.created_at && 
+                        Math.abs(new Date(item.updated_at).getTime() - new Date(item.created_at).getTime()) > 5000; // 5 segundos de margem
+
       if (existingAtiv) {
         existingAtiv.fotos += fotoCount;
         existingAtiv.urls.push(...fotoUrls);
+        if (isEditado) existingAtiv.editado = true;
       } else {
         group.atividades.push({
           wbs: item.tarefa,
           descricao: item.comentario || "",
           fotos: fotoCount,
-          urls: fotoUrls
+          urls: fotoUrls,
+          editado: isEditado
         });
       }
       group.totalFotos += fotoCount;

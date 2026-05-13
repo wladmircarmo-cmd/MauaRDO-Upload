@@ -103,16 +103,12 @@ export async function POST(request: Request) {
       const normalizedWbs = normalizeWbs(parsed.data.wbs);
       const commentValue = parsed.data.description ?? null;
       
-      let ativQuery = admin
+      const { data: ativData, error: ativQueryError } = await admin
         .from("rdo_atividades")
         .select("id_atividade")
         .eq("id_rdo_os", id_rdo_os)
-        .eq("tarefa", normalizedWbs);
-      
-      if (commentValue === null) ativQuery = ativQuery.is("comentario", null);
-      else ativQuery = ativQuery.eq("comentario", commentValue);
-
-      const { data: ativData, error: ativQueryError } = await ativQuery.maybeSingle();
+        .eq("tarefa", normalizedWbs)
+        .maybeSingle();
 
       let id_atividade: number;
       if (ativQueryError) throw ativQueryError;
@@ -131,6 +127,16 @@ export async function POST(request: Request) {
         id_atividade = newAtiv.id_atividade;
       } else {
         id_atividade = ativData.id_atividade;
+        // Atualizar o comentário e o timestamp de edição
+        const { error: updateError } = await admin
+          .from("rdo_atividades")
+          .update({ 
+            comentario: commentValue,
+            updated_at: new Date().toISOString() 
+          })
+          .eq("id_atividade", id_atividade);
+        
+        if (updateError) throw updateError;
       }
 
       // 4. Upload Files and Create Images
@@ -140,8 +146,7 @@ export async function POST(request: Request) {
         const uploadType = formData.get(`uploadType_${i}`) as string | null;
 
         if (!uploadType || (uploadType !== "camera" && uploadType !== "gallery")) {
-          console.error(`Invalid upload type for file ${i}: ${uploadType}`);
-          continue;
+          throw new Error(`Tipo de upload inválido para a foto ${i}: ${uploadType}`);
         }
 
         const prefix = uploadType === "camera" ? "cam" : "gal";
@@ -154,8 +159,7 @@ export async function POST(request: Request) {
           .upload(supabasePath, file);
 
         if (uploadError) {
-          console.error("Storage upload error:", uploadError);
-          continue; // Skip this file and continue
+          throw new Error(`Erro no Storage (Foto ${i}): ${uploadError.message}`);
         }
 
         const publicUrl = admin.storage.from("fotos-planilhas").getPublicUrl(supabasePath).data.publicUrl;
@@ -167,9 +171,11 @@ export async function POST(request: Request) {
             tipo_envio: uploadType
           });
 
-        if (!imgError) {
-          results.push(supabasePath);
+        if (imgError) {
+          throw new Error(`Erro ao vincular imagem no banco (Foto ${i}): ${imgError.message}`);
         }
+        
+        results.push(supabasePath);
       }
 
       return NextResponse.json({ 
@@ -179,7 +185,8 @@ export async function POST(request: Request) {
       });
     } catch (rdoFlowError) {
       console.error("RDO tables insert error:", rdoFlowError);
-      return NextResponse.json({ error: "internal_server_error" }, { status: 500 });
+      const msg = rdoFlowError instanceof Error ? rdoFlowError.message : "Erro desconhecido no fluxo do RDO";
+      return NextResponse.json({ error: msg }, { status: 500 });
     }
   } catch (err) {
     const message = err instanceof Error ? err.message : "unknown_error";
