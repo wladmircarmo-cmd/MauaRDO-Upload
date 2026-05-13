@@ -27,6 +27,20 @@ interface FileWithType {
   uploadType: "camera" | "gallery";
 }
 
+interface MauaTask {
+  id_eap: string | number;
+  wbs: string;
+  subtask?: string;
+  os?: string;
+  item?: string;
+  codAtiv?: string;
+  cod_os?: string;
+  descr_os?: string;
+  cod_atividade?: string;
+  descr_atividade?: string;
+  descricao?: string;
+}
+
 const SunIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="4" /><path d="M12 2v2" /><path d="M12 20v2" /><path d="m4.93 4.93 1.41 1.41" /><path d="m17.66 17.66 1.41 1.41" /><path d="M2 12h2" /><path d="M20 12h2" /><path d="m6.34 17.66-1.41 1.41" /><path d="m19.07 4.93-1.41 1.41" /></svg>
 );
@@ -52,7 +66,7 @@ export function MainScreen() {
   const [date, setDate] = useState<string>(new Date().toISOString().split("T")[0]);
   const [dateFilterType, setDateFilterType] = useState<'active' | 'start' | 'end'>('active');
   const [selectedTaskId, setSelectedTaskId] = useState<string | number>("");
-  const [wbsList, setWbsList] = useState<{ id_eap: string | number, wbs: string, subtask?: string, os?: string, item?: string, codAtiv?: string, cod_os?: string, descr_os?: string, cod_atividade?: string, descr_atividade?: string, descricao?: string }[]>([]);
+  const [wbsList, setWbsList] = useState<MauaTask[]>([]);
   const [wbsLoading, setWbsLoading] = useState(false);
   const [files, setFiles] = useState<FileWithType[]>([]);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
@@ -165,7 +179,7 @@ export function MainScreen() {
           if (formattedTasks.length > 0) {
             setSelectedTaskId(formattedTasks[0].id_eap);
             setWbs(formattedTasks[0].wbs);
-            setOs(formattedTasks[0].os || (formattedTasks[0] as any).cod_os || "");
+            setOs(formattedTasks[0].os || formattedTasks[0].cod_os || "");
           }
         }
       } catch (error) {
@@ -436,7 +450,7 @@ export function MainScreen() {
               const found = wbsList.find(t => String(t.id_eap) === String(id));
               if (found) {
                 setWbs(found.wbs);
-                setOs(found.os || (found as any).cod_os || "");
+                setOs(found.os || found.cod_os || "");
               }
             }}
             disabled={wbsLoading || wbsList.length === 0}
