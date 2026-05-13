@@ -316,7 +316,7 @@ export function MainScreen() {
 
   return (
     <div className={`min-h-dvh transition-colors duration-300 ${isDarkMode ? "bg-zinc-950 text-zinc-50" : "bg-zinc-50 text-zinc-900"}`}>
-      <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 py-10">
+      <div className="mx-auto flex w-full max-w-4xl flex-col gap-10 px-4 py-16">
         <header className="flex items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-4">
@@ -383,13 +383,13 @@ export function MainScreen() {
         </section> */}
 
 
-        <section className={`grid grid-cols-2 gap-4 rounded-2xl border p-5 transition-colors ${isDarkMode ? "border-zinc-800 bg-zinc-950/60" : "border-zinc-200 bg-white shadow-sm"}`}>
-          <div className="flex flex-col gap-2">
-            <label className={`text-sm font-medium ${isDarkMode ? "text-zinc-200" : "text-zinc-700"}`}>CC (Centro de Custo)</label>
+        <section className={`grid grid-cols-2 gap-8 rounded-[2.5rem] border p-10 transition-colors ${isDarkMode ? "border-zinc-800 bg-zinc-950/60" : "border-zinc-200 bg-white shadow-lg shadow-zinc-200/20"}`}>
+          <div className="flex flex-col gap-4">
+            <label className={`text-sm font-black uppercase tracking-widest ${isDarkMode ? "text-zinc-400" : "text-[#2868A0]"}`}>CC (Centro de Custo)</label>
             <select
               value={cc}
               onChange={(e) => setCc(e.target.value)}
-              className={`w-full rounded-xl border px-3 py-2 text-sm outline-none focus:border-[#2868A0] transition-colors ${isDarkMode
+              className={`w-full rounded-2xl border px-5 py-4 text-xl font-bold outline-none focus:border-[#2868A0] transition-all focus:ring-4 focus:ring-[#2868A0]/10 ${isDarkMode
                 ? "border-zinc-700 bg-zinc-950 text-zinc-100"
                 : "border-zinc-200 bg-zinc-50 text-zinc-900"
                 }`}
@@ -405,10 +405,10 @@ export function MainScreen() {
               )}
             </select>
           </div>
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between">
-              <label className={`text-sm font-medium ${isDarkMode ? "text-zinc-200" : "text-zinc-700"}`}>DATA</label>
-              <div className="flex gap-1">
+              <label className={`text-sm font-black uppercase tracking-widest ${isDarkMode ? "text-zinc-400" : "text-[#2868A0]"}`}>DATA</label>
+              <div className="flex gap-2">
                 {[
                   { id: 'active', label: 'Vigentes' },
                   { id: 'start', label: 'Início' },
@@ -417,10 +417,11 @@ export function MainScreen() {
                   <button
                     key={type.id}
                     onClick={() => setDateFilterType(type.id as 'active' | 'start' | 'end')}
-                    className={`px-2 py-0.5 text-[9px] font-bold uppercase tracking-tighter rounded-md border transition-all ${dateFilterType === type.id
-                      ? "bg-[#2868A0] border-[#2868A0] text-white"
-                      : isDarkMode ? "bg-zinc-900 border-zinc-700 text-zinc-400 hover:bg-zinc-800" : "bg-zinc-100 border-zinc-200 text-zinc-500 hover:bg-zinc-200"
-                      }`}
+                    className={`px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-lg border transition-all ${
+                      dateFilterType === type.id 
+                        ? "bg-[#2868A0] border-[#2868A0] text-white shadow-lg shadow-[#2868A0]/20" 
+                        : isDarkMode ? "bg-zinc-900 border-zinc-700 text-zinc-400 hover:bg-zinc-800" : "bg-zinc-100 border-zinc-200 text-zinc-500 hover:bg-zinc-200"
+                    }`}
                   >
                     {type.label}
                   </button>
@@ -431,7 +432,7 @@ export function MainScreen() {
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              className={`w-full rounded-xl border px-3 py-2 text-sm outline-none focus:border-[#2868A0] transition-colors ${isDarkMode
+              className={`w-full rounded-2xl border px-5 py-4 text-xl font-bold outline-none focus:border-[#2868A0] transition-all focus:ring-4 focus:ring-[#2868A0]/10 ${isDarkMode
                 ? "border-zinc-700 bg-zinc-950 text-zinc-100"
                 : "border-zinc-200 bg-zinc-50 text-zinc-900"
                 }`}
@@ -439,8 +440,8 @@ export function MainScreen() {
           </div>
         </section>
 
-        <section className={`rounded-2xl border p-5 transition-colors ${isDarkMode ? "border-zinc-800 bg-zinc-950/60" : "border-zinc-200 bg-white shadow-sm"}`}>
-          <label className={`text-sm font-medium ${isDarkMode ? "text-zinc-200" : "text-zinc-700"}`}>ATIVIDADE</label>
+        <section className={`rounded-[2.5rem] border p-10 transition-colors ${isDarkMode ? "border-zinc-800 bg-zinc-950/60" : "border-zinc-200 bg-white shadow-lg shadow-zinc-200/20"}`}>
+          <label className={`text-sm font-black uppercase tracking-widest ${isDarkMode ? "text-zinc-400" : "text-[#2868A0]"}`}>ATIVIDADE</label>
           <select
             value={selectedTaskId}
             onChange={(e) => {
@@ -453,7 +454,7 @@ export function MainScreen() {
               }
             }}
             disabled={wbsLoading || wbsList.length === 0}
-            className={`mt-2 w-full rounded-xl border px-3 py-2 text-sm outline-none focus:border-[#2868A0] disabled:cursor-not-allowed disabled:opacity-60 transition-colors ${isDarkMode
+            className={`mt-4 w-full rounded-2xl border px-5 py-4 text-xl font-bold outline-none focus:border-[#2868A0] disabled:cursor-not-allowed disabled:opacity-60 transition-all focus:ring-4 focus:ring-[#2868A0]/10 ${isDarkMode
               ? "border-zinc-700 bg-zinc-950 text-zinc-100"
               : "border-zinc-200 bg-zinc-50 text-zinc-900"
               }`}
@@ -478,53 +479,46 @@ export function MainScreen() {
           </p>
         </section>
 
-        <section className={`rounded-2xl border p-5 transition-colors ${isDarkMode ? "border-zinc-800 bg-zinc-950/60" : "border-zinc-200 bg-white shadow-sm"}`}>
-          <label className={`text-sm font-medium ${isDarkMode ? "text-zinc-200" : "text-zinc-700"}`}>OS (Ordem de Serviço)</label>
-          <input
-            type="text"
-            value={wbsList.find(t => t.wbs === wbs)?.cod_os ? `${wbsList.find(t => t.wbs === wbs)?.cod_os} - ${wbsList.find(t => t.wbs === wbs)?.descr_os || os}` : os}
-            disabled
-            className={`mt-2 w-full rounded-xl border px-3 py-2 text-sm outline-none cursor-not-allowed transition-colors ${isDarkMode
-              ? "border-zinc-700 bg-zinc-900/50 text-zinc-400"
-              : "border-zinc-200 bg-zinc-100 text-zinc-500"
-              }`}
-          />
-          <p className="mt-1 text-[10px] text-zinc-500 uppercase tracking-tight">
+        <section className={`rounded-[2.5rem] border p-10 transition-colors ${isDarkMode ? "border-zinc-800 bg-zinc-950/60" : "border-zinc-200 bg-white shadow-lg shadow-zinc-200/20"}`}>
+          <label className={`text-sm font-black uppercase tracking-widest ${isDarkMode ? "text-zinc-400" : "text-[#2868A0]"}`}>OS (Ordem de Serviço)</label>
+          <div className={`mt-4 rounded-2xl border px-5 py-4 text-xl font-bold ${isDarkMode ? "border-zinc-800 bg-zinc-950 text-zinc-400" : "border-zinc-200 bg-zinc-100 text-zinc-500"}`}>
+            {os || "VINCULADO AUTOMATICAMENTE À TAREFA"}
+          </div>
+          <p className="mt-2 text-[10px] font-black uppercase tracking-widest text-zinc-500">
             Vinculado automaticamente à tarefa
           </p>
         </section>
 
-
-
-        <section className={`rounded-2xl border p-5 transition-colors ${isDarkMode ? "border-zinc-800 bg-zinc-950/60" : "border-zinc-200 bg-white shadow-sm"}`}>
-          <label className={`text-sm font-medium ${isDarkMode ? "text-zinc-200" : "text-zinc-700"}`}>DESCRIÇÃO</label>
-          <input
-            type="text"
+        <section className={`rounded-[2.5rem] border p-10 transition-colors ${isDarkMode ? "border-zinc-800 bg-zinc-950/60" : "border-zinc-200 bg-white shadow-lg shadow-zinc-200/20"}`}>
+          <label className={`text-sm font-black uppercase tracking-widest ${isDarkMode ? "text-zinc-400" : "text-[#2868A0]"}`}>DESCRIÇÃO</label>
+          <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Opcional: Descreva o que está na foto..."
-            className={`mt-2 w-full rounded-xl border px-3 py-2 text-sm outline-none focus:border-[#2868A0] transition-colors ${isDarkMode
-              ? "border-zinc-700 bg-zinc-950 text-zinc-100"
-              : "border-zinc-200 bg-zinc-50 text-zinc-900"
+            className={`mt-4 w-full rounded-2xl border px-5 py-4 text-xl font-medium outline-none focus:border-[#2868A0] transition-all focus:ring-4 focus:ring-[#2868A0]/10 min-h-[120px] ${isDarkMode
+              ? "border-zinc-700 bg-zinc-950 text-zinc-100 placeholder:text-zinc-700"
+              : "border-zinc-200 bg-zinc-50 text-zinc-900 placeholder:text-zinc-300"
               }`}
           />
-          {/* Aviso de Atividade já lançada */}
-          {history.find(h => h.cc === cc && h.data === date)?.rdo_atividades.some(a => normalizeWbs(a.wbs) === normalizeWbs(wbs)) && (
-            <div className={`mt-3 flex items-center gap-2 rounded-lg border px-3 py-2 animate-in fade-in slide-in-from-top-1 ${isDarkMode ? "bg-amber-500/10 border-amber-500/20 text-amber-500" : "bg-amber-50 border-amber-200 text-amber-600"
-              }`}>
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
-              <span className="text-[10px] font-bold uppercase tracking-tight">Esta atividade já possui registros para hoje. Novas fotos serão adicionadas.</span>
-            </div>
-          )}
         </section>
-        <section className={`rounded-2xl border p-5 transition-colors ${isDarkMode ? "border-zinc-800 bg-zinc-950/60" : "border-zinc-200 bg-white shadow-sm"}`}>
-          <div className="flex flex-col gap-4 mb-4">
+
+        {/* Aviso de Atividade já lançada */}
+        {history.find(h => h.cc === cc && h.data === date)?.rdo_atividades.some(a => normalizeWbs(a.wbs) === normalizeWbs(wbs)) && (
+          <div className={`mt-3 flex items-center gap-2 rounded-lg border px-3 py-2 animate-in fade-in slide-in-from-top-1 ${isDarkMode ? "bg-amber-500/10 border-amber-500/20 text-amber-500" : "bg-amber-50 border-amber-200 text-amber-600"
+            }`}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
+            <span className="text-[10px] font-bold uppercase tracking-tight">Esta atividade já possui registros para hoje. Novas fotos serão adicionadas.</span>
+          </div>
+        )}
+
+        <section className={`rounded-[2.5rem] border p-10 transition-colors ${isDarkMode ? "border-zinc-800 bg-zinc-950/60" : "border-zinc-200 bg-white shadow-lg shadow-zinc-200/20"}`}>
+          <div className="flex flex-col gap-8">
             <div className="flex items-center justify-between">
-              <p className={`text-base font-black uppercase tracking-tight ${isDarkMode ? "text-white" : "text-zinc-900"}`}>Imagens</p>
+              <p className={`text-xl font-black uppercase tracking-tight ${isDarkMode ? "text-white" : "text-[#2868A0]"}`}>Imagens</p>
               {(() => {
                 const alreadyUploaded = history.find(h => h.cc === cc && h.data === date)?.rdo_atividades.find(a => normalizeWbs(a.wbs) === normalizeWbs(wbs))?.fotos || 0;
                 return (
-                  <span className={`text-sm font-black px-4 py-1.5 rounded-xl border ${
+                  <span className={`text-base font-black px-5 py-2 rounded-xl border ${
                     isDarkMode ? "bg-[#2868A0]/10 border-[#2868A0]/30 text-[#2868A0]" : "bg-[#2868A0]/5 border-[#2868A0]/20 text-[#2868A0]"
                   }`}>
                     {alreadyUploaded}/4 ENVIADAS
@@ -539,132 +533,140 @@ export function MainScreen() {
 
               if (remaining <= 0) {
                 return (
-                  <div className={`flex items-center justify-center gap-2 p-4 rounded-xl border border-dashed ${isDarkMode ? "bg-rose-500/10 border-rose-500/20 text-rose-500" : "bg-rose-50 border-rose-200 text-rose-600"}`}>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
-                    <span className="text-xs font-bold uppercase">Limite de 4 fotos atingido para esta atividade</span>
+                  <div className={`flex items-center justify-center gap-4 p-10 rounded-[1.5rem] border-2 border-dashed ${isDarkMode ? "bg-rose-500/10 border-rose-500/20 text-rose-500" : "bg-rose-50 border-rose-200 text-rose-600"}`}>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
+                    <span className="text-lg font-black uppercase tracking-widest">Limite de 4 fotos atingido</span>
                   </div>
                 );
               }
 
               return (
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-6">
                   <button
                     type="button"
                     onClick={() => cameraInputRef.current?.click()}
                     disabled={files.length >= remaining}
-                    className={`flex items-center justify-center gap-3 rounded-xl border py-4 text-lg font-bold transition active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed ${isDarkMode
+                    className={`flex flex-col items-center justify-center gap-4 rounded-[2rem] border py-12 transition-all active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed ${isDarkMode
                       ? "bg-zinc-900 border-zinc-700 text-zinc-100 hover:bg-zinc-800"
-                      : "bg-zinc-100 border-zinc-200 text-zinc-800 hover:bg-zinc-200"
+                      : "bg-zinc-50 border-zinc-200 text-zinc-800 hover:bg-zinc-100 shadow-sm"
                       }`}
                   >
-                    <CameraIcon /> Câmera
+                    <div className={`p-4 rounded-2xl ${isDarkMode ? "bg-zinc-800" : "bg-white shadow-sm"}`}>
+                      <CameraIcon />
+                    </div>
+                    <span className="text-sm font-black uppercase tracking-[0.2em]">Câmera</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => galleryInputRef.current?.click()}
                     disabled={files.length >= remaining}
-                    className={`flex items-center justify-center gap-3 rounded-xl border py-4 text-lg font-bold transition active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed ${isDarkMode
+                    className={`flex flex-col items-center justify-center gap-4 rounded-[2rem] border py-12 transition-all active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed ${isDarkMode
                       ? "bg-zinc-900 border-zinc-700 text-zinc-100 hover:bg-zinc-800"
-                      : "bg-zinc-100 border-zinc-200 text-zinc-800 hover:bg-zinc-200"
+                      : "bg-zinc-50 border-zinc-200 text-zinc-800 hover:bg-zinc-100 shadow-sm"
                       }`}
                   >
-                    <GalleryIcon /> Galeria
+                    <div className={`p-4 rounded-2xl ${isDarkMode ? "bg-zinc-800" : "bg-white shadow-sm"}`}>
+                      <GalleryIcon />
+                    </div>
+                    <span className="text-sm font-black uppercase tracking-[0.2em]">Galeria</span>
                   </button>
                 </div>
               );
             })()}
-          </div>
 
-          {/* Hidden Inputs com limite dinâmico */}
-          {(() => {
-            const alreadyUploaded = history.find(h => h.cc === cc && h.data === date)?.rdo_atividades.find(a => normalizeWbs(a.wbs) === normalizeWbs(wbs))?.fotos || 0;
-            const remaining = 4 - alreadyUploaded;
-            return (
-              <>
-                <input
-                  type="file"
-                  accept="image/*"
-                  capture="environment"
-                  className="hidden"
-                  ref={cameraInputRef}
-                  onChange={(e) => handleManualSelect(e, "camera")}
-                />
-                <input
-                  type="file"
-                  accept="image/*"
-                  multiple={remaining > 1}
-                  className="hidden"
-                  ref={galleryInputRef}
-                  onChange={(e) => handleManualSelect(e, "gallery")}
-                />
-              </>
-            );
-          })()}
+            {(() => {
+              const alreadyUploaded = history.find(h => h.cc === cc && h.data === date)?.rdo_atividades.find(a => normalizeWbs(a.wbs) === normalizeWbs(wbs))?.fotos || 0;
+              const remaining = 4 - alreadyUploaded;
+              return (
+                <>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    className="hidden"
+                    ref={cameraInputRef}
+                    onChange={(e) => handleManualSelect(e, "camera")}
+                  />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple={remaining > 1}
+                    className="hidden"
+                    ref={galleryInputRef}
+                    onChange={(e) => handleManualSelect(e, "gallery")}
+                  />
+                </>
+              );
+            })()}
 
-          <div
-            {...getRootProps()}
-            className={`rounded-2xl border border-dashed p-6 transition-all duration-300 ${isDragActive
-              ? "border-[#2868A0] bg-[#2868A0]/10 scale-[1.02]"
-              : isDarkMode ? "border-zinc-800 bg-zinc-900/20" : "border-zinc-200 bg-zinc-50"
-              }`}
-          >
-            <input {...getInputProps()} />
+            <div
+              {...getRootProps()}
+              className={`rounded-[2rem] border-2 border-dashed p-10 transition-all duration-300 ${isDragActive
+                ? "border-[#2868A0] bg-[#2868A0]/10 scale-[1.02]"
+                : isDarkMode ? "border-zinc-800 bg-zinc-900/20" : "border-zinc-200 bg-zinc-50"
+                }`}
+            >
+              <input {...getInputProps()} />
 
-            <div className="flex flex-col items-center gap-4 py-4">
-              <div className="text-sm text-center">
-                {isDragActive && (
-                  <span className="text-[#2868A0] font-bold text-lg">Solte as imagens aqui</span>
+              <div className="flex flex-col items-center gap-6 py-4">
+                <div className="text-center">
+                  {isDragActive ? (
+                    <span className="text-[#2868A0] font-black text-2xl uppercase tracking-widest">Solte as imagens aqui</span>
+                  ) : (
+                    <span className="text-zinc-500 font-black text-sm uppercase tracking-widest italic">Arraste fotos aqui para anexar</span>
+                  )}
+                </div>
+
+                {previewUrls.length > 0 ? (
+                  <div className="grid grid-cols-2 gap-4 w-full">
+                    {previewUrls.map((url, index) => (
+                      <div key={url} className={`group relative overflow-hidden rounded-2xl border-2 bg-black ${isDarkMode ? "border-zinc-800" : "border-zinc-200"}`}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={url}
+                          alt={`Preview ${index + 1}`}
+                          className="aspect-square w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        />
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            removeFile(index);
+                          }}
+                          className="absolute right-3 top-3 flex h-10 w-10 items-center justify-center rounded-xl bg-rose-500 text-white shadow-lg transition-all hover:bg-rose-600 active:scale-90"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className={`rounded-2xl px-8 py-14 text-center text-sm font-bold uppercase tracking-widest transition-colors ${isDarkMode ? "bg-zinc-900/40 text-zinc-700" : "bg-zinc-200/50 text-zinc-400"}`}>
+                    Nenhuma imagem selecionada
+                  </div>
                 )}
               </div>
-
-              {previewUrls.length > 0 ? (
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 w-full">
-                  {previewUrls.map((url, index) => (
-                    <div key={url} className={`group relative overflow-hidden rounded-xl border bg-black ${isDarkMode ? "border-zinc-800" : "border-zinc-200"}`}>
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={url}
-                        alt={`Preview ${index + 1}`}
-                        className="aspect-square w-full object-cover"
-                      />
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          removeFile(index);
-                        }}
-                        className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-rose-500 text-white opacity-0 transition group-hover:opacity-100 hover:bg-rose-600"
-                      >
-                        <span className="text-xs font-bold">X</span>
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className={`rounded-xl px-4 py-10 text-center text-sm transition-colors ${isDarkMode ? "bg-zinc-900/40 text-zinc-400" : "bg-zinc-200/50 text-zinc-500"}`}>
-                  Nenhuma imagem selecionada
-                </div>
-              )}
             </div>
+            {(() => {
+              const alreadyUploaded = history.find(h => h.cc === cc && h.data === date)?.rdo_atividades.find(a => normalizeWbs(a.wbs) === normalizeWbs(wbs))?.fotos || 0;
+              const remaining = 4 - alreadyUploaded;
+              if (remaining > 0 && files.length > 0) {
+                return (
+                  <p className="text-center text-sm font-black uppercase tracking-widest text-[#2868A0]">
+                    {files.length} de {remaining} {remaining === 1 ? "vaga disponível" : "vagas disponíveis"} selecionada(s)
+                  </p>
+                );
+              }
+              return null;
+            })()}
           </div>
-          {(() => {
-            const alreadyUploaded = history.find(h => h.cc === cc && h.data === date)?.rdo_atividades.find(a => normalizeWbs(a.wbs) === normalizeWbs(wbs))?.fotos || 0;
-            const remaining = 4 - alreadyUploaded;
-            if (remaining > 0 && files.length > 0) {
-              return (
-                <p className="mt-2 text-center text-xs text-zinc-500">
-                  {files.length} de {remaining} {remaining === 1 ? "vaga disponível" : "vagas disponíveis"} selecionada(s)
-                </p>
-              );
-            }
-            return null;
-          })()}
         </section>
-        <section className="flex flex-col gap-3">
+
+        <section className="flex flex-col gap-6">
           <button
             onClick={submit}
             disabled={status.kind === "loading"}
-            className="rounded-2xl bg-[#2868A0] px-5 py-3 text-sm font-semibold text-white hover:bg-[#1f5f8c] disabled:opacity-60"
+            className="rounded-[2.5rem] bg-[#2868A0] py-10 text-3xl font-black text-white shadow-2xl shadow-[#2868A0]/40 transition-all hover:bg-[#1f5f8c] active:scale-[0.98] disabled:opacity-60"
           >
             {status.kind === "loading"
               ? status.message
@@ -676,7 +678,7 @@ export function MainScreen() {
 
           {status.kind !== "idle" && status.kind !== "loading" && (
             <div
-              className={`rounded-xl border px-4 py-3 text-sm transition-all ${status.kind === "success"
+              className={`rounded-[1.5rem] border px-6 py-6 text-lg font-bold transition-all shadow-lg animate-in fade-in slide-in-from-top-2 ${status.kind === "success"
                 ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-500"
                 : "border-rose-500/50 bg-rose-500/10 text-rose-500"
                 }`}
