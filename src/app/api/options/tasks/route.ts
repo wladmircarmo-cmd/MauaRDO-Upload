@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getExternalWbsList } from "@/lib/external-api";
+import { getExternalWbsList, ExternalWbsItem } from "@/lib/external-api";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -18,12 +18,12 @@ export async function GET(request: Request) {
 
     if (cc) {
       console.log("Filtering by cod_ccusto:", cc);
-      filteredTasks = tasks.filter((t: any) => String(t.cod_ccusto) === cc);
+      filteredTasks = tasks.filter((t: ExternalWbsItem) => String(t.cod_ccusto) === cc);
     }
 
     if (os) {
       console.log("Filtering by OS:", os);
-      filteredTasks = filteredTasks.filter((t: any) => String(t.OS || t.os) === os);
+      filteredTasks = filteredTasks.filter((t: ExternalWbsItem) => String(t.OS || t.os) === os);
     }
 
     console.log("Filtered tasks count:", filteredTasks.length);

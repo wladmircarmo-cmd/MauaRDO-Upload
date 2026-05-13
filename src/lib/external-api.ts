@@ -3,7 +3,17 @@ const CC_API_URL = 'https://scp.estaleiromaua.ind.br/_api/Maua_Eap.php';
 const API_TOKEN = 'Q3d4RzZZd2NvSklyb2dUeHRLTTV3cndEdWtyc3ExT3lmV2x6aXJkY3RPNFVwdHlv';
 
 export interface ExternalWbsItem {
-  // Definir com base na resposta da API externa
+  id_eap: number | string;
+  wbs: string;
+  cod_ccusto: string | number;
+  descr_ccusto?: string;
+  cod_os?: string | number;
+  os?: string | number;
+  OS?: string | number;
+  descr_os?: string;
+  cod_atividade?: string | number;
+  descr_atividade?: string;
+  status?: string | null;
   [key: string]: unknown;
 }
 
