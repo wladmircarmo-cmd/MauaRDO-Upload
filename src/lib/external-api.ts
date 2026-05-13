@@ -95,7 +95,7 @@ export async function getExternalWbsList(): Promise<ExternalWbsItem[]> {
   }
 }
 
-export async function getExternalOptions(): Promise<{
+export async function getExternalOptions(filterDate?: string, dateType?: 'start' | 'end' | 'active'): Promise<{
   ccs: CCItem[];
   oss: string[];
 }> {
@@ -132,13 +132,38 @@ export async function getExternalOptions(): Promise<{
     const uniqueCcs = Array.from(new Set(ccs.map((cc: CCItem) => cc.cod_ccusto)))
       .map((cod_ccusto) => ccs.find((cc: CCItem) => cc.cod_ccusto === cod_ccusto));
 
-    // Filtrar CCs com data_cadastro > '2026-01' e status = 'Em Progresso'
+    // Filtrar CCs com status = 'Em Progresso' e validade da data
     const filteredCcs = uniqueCcs.filter((cc: CCItem | undefined): cc is CCItem => {
-      if (!cc || !cc.data_cadastro) return false;
+      if (!cc) return false;
+      
+      // Sempre filtrar por status 'Em Progresso'
       if ((cc as CCItem & { status?: string }).status !== 'Em Progresso') return false;
-      const startDate = new Date(cc.data_cadastro as string);
-      const cutoffDate = new Date('2026-01-01');
-      return startDate > cutoffDate;
+
+      // Se houver uma data de filtro, aplicar a lógica correspondente
+      if (filterDate) {
+        // Normalizar strings de data para comparação (YYYY-MM-DD)
+        const selected = filterDate;
+        const start = cc.data_inicio ? String(cc.data_inicio).split(' ')[0] : null;
+        const end = cc.data_fim ? String(cc.data_fim).split(' ')[0] : null;
+
+        if (dateType === 'start') {
+          return start === selected;
+        } else if (dateType === 'end') {
+          return end === selected;
+        } else {
+          // Lógica 'active' (entre início e fim)
+          if (start && selected < start) return false;
+          if (end && selected > end) return false;
+        }
+      } else {
+        // Fallback: se não houver data, manter o filtro original de data_cadastro
+        if (!cc.data_cadastro) return false;
+        const startDate = new Date(cc.data_cadastro as string);
+        const cutoffDate = new Date('2026-01-01');
+        if (startDate <= cutoffDate) return false;
+      }
+      
+      return true;
     });
     
     console.log('Filtered CCs:', filteredCcs);

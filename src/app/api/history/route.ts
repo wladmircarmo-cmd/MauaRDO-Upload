@@ -24,7 +24,8 @@ export async function GET(request: Request) {
           )
         ),
         rdo_imagens (
-          id_imagem
+          id_imagem,
+          imagem_url
         )
       `, { count: "exact" })
       .order("created_at", { ascending: false })
@@ -40,7 +41,7 @@ export async function GET(request: Request) {
       data: string;
       cc: string;
       os: string;
-      atividades: { wbs: string; descricao: string; fotos: number }[];
+      atividades: { wbs: string; descricao: string; fotos: number; urls: string[] }[];
       totalFotos: number;
     }
     interface RawHistoryItem {
@@ -65,7 +66,7 @@ export async function GET(request: Request) {
           data_rdo: string;
         };
       };
-      rdo_imagens: { id_imagem: number | string }[];
+      rdo_imagens: { id_imagem: number | string; imagem_url: string }[];
     }
 
     // Group activities by OS + Date + CC
@@ -97,15 +98,18 @@ export async function GET(request: Request) {
       const ativKey = `${item.tarefa}-${item.comentario || ""}`;
       const existingAtiv = group.atividades.find((a) => `${a.wbs}-${a.descricao}` === ativKey);
       
-      const fotoCount = item.rdo_imagens?.length || 0;
+      const fotoUrls = item.rdo_imagens?.map(img => img.imagem_url).filter(Boolean) || [];
+      const fotoCount = fotoUrls.length;
       
       if (existingAtiv) {
         existingAtiv.fotos += fotoCount;
+        existingAtiv.urls.push(...fotoUrls);
       } else {
         group.atividades.push({
           wbs: item.tarefa,
           descricao: item.comentario || "",
-          fotos: fotoCount
+          fotos: fotoCount,
+          urls: fotoUrls
         });
       }
       group.totalFotos += fotoCount;

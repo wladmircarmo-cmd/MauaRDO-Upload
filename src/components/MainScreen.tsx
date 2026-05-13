@@ -18,7 +18,7 @@ interface HistoryItem {
   data: string;
   cc: string;
   os: string;
-  rdo_atividades: { wbs: string; descricao: string; fotos: number }[];
+  rdo_atividades: { wbs: string; descricao: string; fotos: number; urls?: string[] }[];
   totalFotos: number;
 }
 
@@ -50,6 +50,7 @@ export function MainScreen() {
   const [ccOptions, setCcOptions] = useState<CCItem[]>([]);
   const [os, setOs] = useState<string>("");
   const [date, setDate] = useState<string>(new Date().toISOString().split("T")[0]);
+  const [dateFilterType, setDateFilterType] = useState<'active' | 'start' | 'end'>('active');
   const [selectedTaskId, setSelectedTaskId] = useState<string | number>("");
   const [wbsList, setWbsList] = useState<{ id_eap: string | number, wbs: string, subtask?: string, os?: string, item?: string, codAtiv?: string, cod_os?: string, descr_os?: string, cod_atividade?: string, descr_atividade?: string, descricao?: string }[]>([]);
   const [wbsLoading, setWbsLoading] = useState(false);
@@ -60,6 +61,8 @@ export function MainScreen() {
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
+  const [selectedHistoryItem, setSelectedHistoryItem] = useState<HistoryItem | null>(null);
+  const [viewingPhotos, setViewingPhotos] = useState<string[] | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
@@ -110,12 +113,19 @@ export function MainScreen() {
     async function init() {
       try {
         setOptionsLoading(true);
-        // Load CCs
-        const optRes = await fetch("/api/options");
+        // Load CCs with date filter and type
+        const optRes = await fetch(`/api/options?date=${date}&type=${dateFilterType}`);
         if (optRes.ok) {
           const data = await optRes.json();
           setCcOptions(data.ccs || []);
-          if (data.ccs?.length > 0) setCc(String(data.ccs[0].cod_ccusto));
+          
+          // Se o CC atual não estiver na nova lista, seleciona o primeiro disponível
+          const currentCcStillExists = data.ccs?.some((item: CCItem) => String(item.cod_ccusto) === cc);
+          if (!currentCcStillExists && data.ccs?.length > 0) {
+            setCc(String(data.ccs[0].cod_ccusto));
+          } else if (data.ccs?.length === 0) {
+            setCc("");
+          }
         }
 
         // Fetch History
@@ -127,7 +137,7 @@ export function MainScreen() {
       }
     }
     init();
-  }, [fetchHistory]);
+  }, [fetchHistory, date, dateFilterType]);
 
   // Load Tasks when CC changes
   useEffect(() => {
@@ -379,7 +389,28 @@ export function MainScreen() {
             </select>
           </div>
           <div className="flex flex-col gap-2">
-            <label className={`text-sm font-medium ${isDarkMode ? "text-zinc-200" : "text-zinc-700"}`}>DATA</label>
+            <div className="flex items-center justify-between">
+              <label className={`text-sm font-medium ${isDarkMode ? "text-zinc-200" : "text-zinc-700"}`}>DATA</label>
+              <div className="flex gap-1">
+                {[
+                  { id: 'active', label: 'Vigentes' },
+                  { id: 'start', label: 'Início' },
+                  { id: 'end', label: 'Fim' }
+                ].map((type) => (
+                  <button
+                    key={type.id}
+                    onClick={() => setDateFilterType(type.id as any)}
+                    className={`px-2 py-0.5 text-[9px] font-bold uppercase tracking-tighter rounded-md border transition-all ${
+                      dateFilterType === type.id 
+                        ? "bg-[#2868A0] border-[#2868A0] text-white" 
+                        : isDarkMode ? "bg-zinc-900 border-zinc-700 text-zinc-400 hover:bg-zinc-800" : "bg-zinc-100 border-zinc-200 text-zinc-500 hover:bg-zinc-200"
+                    }`}
+                  >
+                    {type.label}
+                  </button>
+                ))}
+              </div>
+            </div>
             <input
               type="date"
               value={date}
@@ -600,7 +631,10 @@ export function MainScreen() {
               history.map((item) => (
                 <div
                   key={item.id}
-                  className={`flex flex-col gap-2 rounded-xl border p-3 transition-all ${isDarkMode ? "bg-zinc-900/40 border-zinc-800" : "bg-zinc-50 border-zinc-100 shadow-sm"
+                  onClick={() => setSelectedHistoryItem(item)}
+                  className={`flex flex-col gap-2 rounded-xl border p-3 transition-all cursor-pointer hover:scale-[1.02] active:scale-95 ${isDarkMode 
+                    ? "bg-zinc-900/40 border-zinc-800 hover:bg-zinc-900/60 hover:border-zinc-700" 
+                    : "bg-zinc-50 border-zinc-100 shadow-sm hover:bg-white hover:border-zinc-200 hover:shadow-md"
                     }`}
                 >
                   <div className="flex justify-between items-start">
@@ -668,6 +702,152 @@ export function MainScreen() {
           Dica: mantenha a imagem abaixo de 10MB (compressão automática).
         </footer>
       </div>
+
+      {/* Modal de Detalhes do Histórico */}
+      {selectedHistoryItem && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300"
+          onClick={() => setSelectedHistoryItem(null)}
+        >
+          <div 
+            className={`relative w-full max-w-lg overflow-hidden rounded-3xl border shadow-2xl transition-all animate-in zoom-in-95 duration-300 ${
+              isDarkMode ? "bg-zinc-900 border-zinc-800" : "bg-white border-zinc-200"
+            }`}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header do Modal */}
+            <div className={`flex items-center justify-between border-b px-6 py-4 ${isDarkMode ? "border-zinc-800 bg-zinc-900/50" : "border-zinc-100 bg-zinc-50/50"}`}>
+              <div>
+                <h3 className={`text-lg font-bold ${isDarkMode ? "text-white" : "text-zinc-900"}`}>Detalhes do RDO</h3>
+                <p className="text-xs text-zinc-500 uppercase tracking-widest font-medium">Informações registradas</p>
+              </div>
+              <button 
+                onClick={() => setSelectedHistoryItem(null)}
+                className={`flex h-10 w-10 items-center justify-center rounded-full transition-colors ${
+                  isDarkMode ? "hover:bg-zinc-800 text-zinc-400" : "hover:bg-zinc-100 text-zinc-500"
+                }`}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+              </button>
+            </div>
+
+            {/* Conteúdo do Modal */}
+            <div className="max-h-[70vh] overflow-y-auto p-6">
+              <div className="grid grid-cols-2 gap-6 mb-8">
+                <div className="flex flex-col gap-1">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Ordem de Serviço</span>
+                  <span className={`text-sm font-semibold ${isDarkMode ? "text-zinc-200" : "text-zinc-800"}`}>OS {selectedHistoryItem.os}</span>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Data do RDO</span>
+                  <span className={`text-sm font-semibold ${isDarkMode ? "text-zinc-200" : "text-zinc-800"}`}>
+                    {selectedHistoryItem.data ? new Date(selectedHistoryItem.data + 'T12:00:00').toLocaleDateString('pt-BR') : '---'}
+                  </span>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Centro de Custo</span>
+                  <span className={`text-sm font-semibold ${isDarkMode ? "text-zinc-200" : "text-zinc-800"}`}>CC {selectedHistoryItem.cc}</span>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Total de Fotos</span>
+                  <span className={`inline-flex w-fit rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                    isDarkMode ? "bg-[#2868A0]/20 text-[#2868A0]" : "bg-[#2868A0]/10 text-[#2868A0]"
+                  }`}>
+                    {selectedHistoryItem.totalFotos} FOTOS ENVIADAS
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-4">
+                <h4 className={`text-xs font-bold uppercase tracking-widest ${isDarkMode ? "text-zinc-400" : "text-zinc-500"}`}>Atividades Relacionadas</h4>
+                <div className="flex flex-col gap-3">
+                  {selectedHistoryItem.rdo_atividades?.map((atv, idx) => (
+                    <div 
+                      key={idx} 
+                      onClick={() => atv.urls && atv.urls.length > 0 && setViewingPhotos(atv.urls)}
+                      className={`flex flex-col gap-2 rounded-2xl border p-4 transition-all ${
+                        atv.urls && atv.urls.length > 0 ? "cursor-pointer hover:border-[#2868A0] hover:bg-[#2868A0]/5" : ""
+                      } ${
+                        isDarkMode ? "bg-zinc-800/30 border-zinc-800" : "bg-zinc-50 border-zinc-100"
+                      }`}
+                    >
+                      <div className="flex justify-between items-start gap-4">
+                        <div className="flex flex-col gap-1 overflow-hidden">
+                          <span className="text-[10px] font-mono font-bold text-[#2868A0]">{atv.wbs}</span>
+                          <span className={`text-sm font-medium leading-tight ${isDarkMode ? "text-zinc-200" : "text-zinc-800"}`}>
+                            {atv.descricao || "Sem descrição adicional"}
+                          </span>
+                          {atv.urls && atv.urls.length > 0 && (
+                            <span className="text-[9px] font-bold text-[#2868A0] uppercase mt-1 flex items-center gap-1">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                              Clique para ver as fotos
+                            </span>
+                          )}
+                        </div>
+                        <span className={`shrink-0 rounded-lg px-2 py-1 text-[10px] font-bold ${
+                          isDarkMode ? "bg-zinc-800 text-zinc-500" : "bg-white text-zinc-400 border border-zinc-100"
+                        }`}>
+                          {atv.fotos} FOT.
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Footer do Modal */}
+            <div className={`p-4 text-center ${isDarkMode ? "bg-zinc-900/80" : "bg-zinc-50/80"}`}>
+              <button 
+                onClick={() => setSelectedHistoryItem(null)}
+                className="w-full rounded-2xl bg-[#2868A0] py-3 text-sm font-bold text-white transition-all hover:bg-[#1f5f8c] active:scale-[0.98]"
+              >
+                Fechar Detalhes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Galeria de Fotos */}
+      {viewingPhotos && (
+        <div 
+          className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-in fade-in duration-300"
+          onClick={() => setViewingPhotos(null)}
+        >
+          <button 
+            onClick={() => setViewingPhotos(null)}
+            className="absolute right-6 top-6 z-10 flex h-12 w-12 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition-all active:scale-95"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+          </button>
+
+          <div 
+            className="w-full max-w-4xl max-h-[85vh] overflow-y-auto px-2"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              {viewingPhotos.map((url, i) => (
+                <div key={i} className="group relative overflow-hidden rounded-2xl border border-white/10 bg-zinc-900 shadow-2xl">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img 
+                    src={url} 
+                    alt={`Foto ${i + 1}`}
+                    className="w-full h-auto object-contain max-h-[60vh] transition-transform duration-500 group-hover:scale-105"
+                  />
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 opacity-0 transition-opacity group-hover:opacity-100">
+                    <p className="text-white text-xs font-bold uppercase tracking-widest">Foto {i + 1} de {viewingPhotos.length}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          
+          <p className="absolute bottom-10 text-white/40 text-[10px] uppercase font-bold tracking-widest">
+            Clique fora para fechar a galeria
+          </p>
+        </div>
+      )}
     </div>
   );
 }
