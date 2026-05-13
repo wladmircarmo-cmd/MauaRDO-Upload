@@ -872,7 +872,7 @@ export function MainScreen() {
 
                       {atv.urls && atv.urls.length > 0 && (
                         <button
-                          onClick={() => setViewingPhotos(atv.urls)}
+                          onClick={() => setViewingPhotos(atv.urls || null)}
                           className="w-fit text-[11px] font-black uppercase tracking-widest text-[#2868A0] hover:underline flex items-center gap-2 mt-2"
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
