@@ -49,6 +49,8 @@ export async function GET(request: Request) {
     interface RawHistoryItem {
       tarefa: string;
       comentario: string | null;
+      created_at: string;
+      updated_at: string;
       rdo_os: {
         os: string;
         rdo: {
