@@ -137,7 +137,7 @@ export function MainScreen() {
       }
     }
     init();
-  }, [fetchHistory, date, dateFilterType]);
+  }, [fetchHistory, date, dateFilterType, cc]);
 
   // Load Tasks when CC changes
   useEffect(() => {
@@ -399,7 +399,7 @@ export function MainScreen() {
                 ].map((type) => (
                   <button
                     key={type.id}
-                    onClick={() => setDateFilterType(type.id as any)}
+                    onClick={() => setDateFilterType(type.id as 'active' | 'start' | 'end')}
                     className={`px-2 py-0.5 text-[9px] font-bold uppercase tracking-tighter rounded-md border transition-all ${
                       dateFilterType === type.id 
                         ? "bg-[#2868A0] border-[#2868A0] text-white" 
