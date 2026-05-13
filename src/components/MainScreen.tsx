@@ -385,7 +385,9 @@ export function MainScreen() {
 
         <section className={`grid grid-cols-2 gap-4 rounded-3xl border p-4 transition-colors ${isDarkMode ? "border-zinc-800 bg-zinc-950/60" : "border-zinc-200 bg-white shadow-lg shadow-zinc-200/20"}`}>
           <div className="flex flex-col gap-1">
-            <label className={`text-xs font-black uppercase tracking-widest ${isDarkMode ? "text-zinc-400" : "text-[#2868A0]"}`}>CC (Centro de Custo)</label>
+            <div className="flex items-center min-h-[32px]">
+              <label className={`text-xs font-black uppercase tracking-widest ${isDarkMode ? "text-zinc-400" : "text-[#2868A0]"}`}>CC (Centro de Custo)</label>
+            </div>
             <select
               value={cc}
               onChange={(e) => setCc(e.target.value)}
@@ -406,7 +408,7 @@ export function MainScreen() {
             </select>
           </div>
           <div className="flex flex-col gap-1">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between min-h-[32px]">
               <label className={`text-xs font-black uppercase tracking-widest ${isDarkMode ? "text-zinc-400" : "text-[#2868A0]"}`}>DATA</label>
               <div className="flex gap-2">
                 {[
