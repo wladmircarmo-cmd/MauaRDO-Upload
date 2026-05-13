@@ -316,7 +316,7 @@ export function MainScreen() {
 
   return (
     <div className={`min-h-dvh transition-colors duration-300 ${isDarkMode ? "bg-zinc-950 text-zinc-50" : "bg-zinc-50 text-zinc-900"}`}>
-      <div className="mx-auto flex w-full max-w-4xl flex-col gap-10 px-4 py-16">
+      <div className="mx-auto flex w-full max-w-4xl flex-col gap-1 px-4 py-4">
         <header className="flex items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-4">
@@ -383,9 +383,9 @@ export function MainScreen() {
         </section> */}
 
 
-        <section className={`grid grid-cols-2 gap-8 rounded-[2.5rem] border p-10 transition-colors ${isDarkMode ? "border-zinc-800 bg-zinc-950/60" : "border-zinc-200 bg-white shadow-lg shadow-zinc-200/20"}`}>
-          <div className="flex flex-col gap-4">
-            <label className={`text-sm font-black uppercase tracking-widest ${isDarkMode ? "text-zinc-400" : "text-[#2868A0]"}`}>CC (Centro de Custo)</label>
+        <section className={`grid grid-cols-2 gap-4 rounded-3xl border p-4 transition-colors ${isDarkMode ? "border-zinc-800 bg-zinc-950/60" : "border-zinc-200 bg-white shadow-lg shadow-zinc-200/20"}`}>
+          <div className="flex flex-col gap-1">
+            <label className={`text-xs font-black uppercase tracking-widest ${isDarkMode ? "text-zinc-400" : "text-[#2868A0]"}`}>CC (Centro de Custo)</label>
             <select
               value={cc}
               onChange={(e) => setCc(e.target.value)}
@@ -405,9 +405,9 @@ export function MainScreen() {
               )}
             </select>
           </div>
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-1">
             <div className="flex items-center justify-between">
-              <label className={`text-sm font-black uppercase tracking-widest ${isDarkMode ? "text-zinc-400" : "text-[#2868A0]"}`}>DATA</label>
+              <label className={`text-xs font-black uppercase tracking-widest ${isDarkMode ? "text-zinc-400" : "text-[#2868A0]"}`}>DATA</label>
               <div className="flex gap-2">
                 {[
                   { id: 'active', label: 'Vigentes' },
@@ -417,11 +417,10 @@ export function MainScreen() {
                   <button
                     key={type.id}
                     onClick={() => setDateFilterType(type.id as 'active' | 'start' | 'end')}
-                    className={`px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-lg border transition-all ${
-                      dateFilterType === type.id 
-                        ? "bg-[#2868A0] border-[#2868A0] text-white shadow-lg shadow-[#2868A0]/20" 
+                    className={`px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-lg border transition-all ${dateFilterType === type.id
+                        ? "bg-[#2868A0] border-[#2868A0] text-white shadow-lg shadow-[#2868A0]/20"
                         : isDarkMode ? "bg-zinc-900 border-zinc-700 text-zinc-400 hover:bg-zinc-800" : "bg-zinc-100 border-zinc-200 text-zinc-500 hover:bg-zinc-200"
-                    }`}
+                      }`}
                   >
                     {type.label}
                   </button>
@@ -440,8 +439,8 @@ export function MainScreen() {
           </div>
         </section>
 
-        <section className={`rounded-[2.5rem] border p-10 transition-colors ${isDarkMode ? "border-zinc-800 bg-zinc-950/60" : "border-zinc-200 bg-white shadow-lg shadow-zinc-200/20"}`}>
-          <label className={`text-sm font-black uppercase tracking-widest ${isDarkMode ? "text-zinc-400" : "text-[#2868A0]"}`}>ATIVIDADE</label>
+        <section className={`rounded-3xl border p-4 transition-colors ${isDarkMode ? "border-zinc-800 bg-zinc-950/60" : "border-zinc-200 bg-white shadow-lg shadow-zinc-200/20"}`}>
+          <label className={`text-xs font-black uppercase tracking-widest ${isDarkMode ? "text-zinc-400" : "text-[#2868A0]"}`}>ATIVIDADE</label>
           <select
             value={selectedTaskId}
             onChange={(e) => {
@@ -454,7 +453,7 @@ export function MainScreen() {
               }
             }}
             disabled={wbsLoading || wbsList.length === 0}
-            className={`mt-4 w-full rounded-2xl border px-5 py-4 text-xl font-bold outline-none focus:border-[#2868A0] disabled:cursor-not-allowed disabled:opacity-60 transition-all focus:ring-4 focus:ring-[#2868A0]/10 ${isDarkMode
+            className={`mt-1 w-full rounded-2xl border px-5 py-3 text-xl font-bold outline-none focus:border-[#2868A0] disabled:cursor-not-allowed disabled:opacity-60 transition-all focus:ring-4 focus:ring-[#2868A0]/10 ${isDarkMode
               ? "border-zinc-700 bg-zinc-950 text-zinc-100"
               : "border-zinc-200 bg-zinc-50 text-zinc-900"
               }`}
@@ -479,23 +478,23 @@ export function MainScreen() {
           </p>
         </section>
 
-        <section className={`rounded-[2.5rem] border p-10 transition-colors ${isDarkMode ? "border-zinc-800 bg-zinc-950/60" : "border-zinc-200 bg-white shadow-lg shadow-zinc-200/20"}`}>
-          <label className={`text-sm font-black uppercase tracking-widest ${isDarkMode ? "text-zinc-400" : "text-[#2868A0]"}`}>OS (Ordem de Serviço)</label>
-          <div className={`mt-4 rounded-2xl border px-5 py-4 text-xl font-bold ${isDarkMode ? "border-zinc-800 bg-zinc-950 text-zinc-400" : "border-zinc-200 bg-zinc-100 text-zinc-500"}`}>
+        <section className={`rounded-3xl border p-4 transition-colors ${isDarkMode ? "border-zinc-800 bg-zinc-950/60" : "border-zinc-200 bg-white shadow-lg shadow-zinc-200/20"}`}>
+          <label className={`text-xs font-black uppercase tracking-widest ${isDarkMode ? "text-zinc-400" : "text-[#2868A0]"}`}>OS (Ordem de Serviço)</label>
+          <div className={`mt-1 rounded-2xl border px-5 py-3 text-xl font-bold ${isDarkMode ? "border-zinc-800 bg-zinc-950 text-zinc-400" : "border-zinc-200 bg-zinc-100 text-zinc-500"}`}>
             {os || "VINCULADO AUTOMATICAMENTE À TAREFA"}
           </div>
-          <p className="mt-2 text-[10px] font-black uppercase tracking-widest text-zinc-500">
+          <p className="mt-1 text-[10px] font-black uppercase tracking-widest text-zinc-500">
             Vinculado automaticamente à tarefa
           </p>
         </section>
 
-        <section className={`rounded-[2.5rem] border p-10 transition-colors ${isDarkMode ? "border-zinc-800 bg-zinc-950/60" : "border-zinc-200 bg-white shadow-lg shadow-zinc-200/20"}`}>
-          <label className={`text-sm font-black uppercase tracking-widest ${isDarkMode ? "text-zinc-400" : "text-[#2868A0]"}`}>DESCRIÇÃO</label>
+        <section className={`rounded-3xl border p-4 transition-colors ${isDarkMode ? "border-zinc-800 bg-zinc-950/60" : "border-zinc-200 bg-white shadow-lg shadow-zinc-200/20"}`}>
+          <label className={`text-xs font-black uppercase tracking-widest ${isDarkMode ? "text-zinc-400" : "text-[#2868A0]"}`}>DESCRIÇÃO</label>
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Opcional: Descreva o que está na foto..."
-            className={`mt-4 w-full rounded-2xl border px-5 py-4 text-xl font-medium outline-none focus:border-[#2868A0] transition-all focus:ring-4 focus:ring-[#2868A0]/10 min-h-[120px] ${isDarkMode
+            className={`mt-1 w-full rounded-2xl border px-5 py-3 text-xl font-medium outline-none focus:border-[#2868A0] transition-all focus:ring-4 focus:ring-[#2868A0]/10 min-h-[80px] ${isDarkMode
               ? "border-zinc-700 bg-zinc-950 text-zinc-100 placeholder:text-zinc-700"
               : "border-zinc-200 bg-zinc-50 text-zinc-900 placeholder:text-zinc-300"
               }`}
@@ -511,16 +510,15 @@ export function MainScreen() {
           </div>
         )}
 
-        <section className={`rounded-[2.5rem] border p-10 transition-colors ${isDarkMode ? "border-zinc-800 bg-zinc-950/60" : "border-zinc-200 bg-white shadow-lg shadow-zinc-200/20"}`}>
+        <section className={`rounded-3xl border p-4 transition-colors ${isDarkMode ? "border-zinc-800 bg-zinc-950/60" : "border-zinc-200 bg-white shadow-lg shadow-zinc-200/20"}`}>
           <div className="flex flex-col gap-8">
             <div className="flex items-center justify-between">
               <p className={`text-xl font-black uppercase tracking-tight ${isDarkMode ? "text-white" : "text-[#2868A0]"}`}>Imagens</p>
               {(() => {
                 const alreadyUploaded = history.find(h => h.cc === cc && h.data === date)?.rdo_atividades.find(a => normalizeWbs(a.wbs) === normalizeWbs(wbs))?.fotos || 0;
                 return (
-                  <span className={`text-base font-black px-5 py-2 rounded-xl border ${
-                    isDarkMode ? "bg-[#2868A0]/10 border-[#2868A0]/30 text-[#2868A0]" : "bg-[#2868A0]/5 border-[#2868A0]/20 text-[#2868A0]"
-                  }`}>
+                  <span className={`text-base font-black px-5 py-2 rounded-xl border ${isDarkMode ? "bg-[#2868A0]/10 border-[#2868A0]/30 text-[#2868A0]" : "bg-[#2868A0]/5 border-[#2868A0]/20 text-[#2868A0]"
+                    }`}>
                     {alreadyUploaded}/4 ENVIADAS
                   </span>
                 );
@@ -541,34 +539,34 @@ export function MainScreen() {
               }
 
               return (
-                <div className="grid grid-cols-2 gap-6">
+                <div className="grid grid-cols-2 gap-4">
                   <button
                     type="button"
                     onClick={() => cameraInputRef.current?.click()}
                     disabled={files.length >= remaining}
-                    className={`flex flex-col items-center justify-center gap-4 rounded-[2rem] border py-12 transition-all active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed ${isDarkMode
+                    className={`flex flex-col items-center justify-center gap-2 rounded-2xl border py-6 transition-all active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed ${isDarkMode
                       ? "bg-zinc-900 border-zinc-700 text-zinc-100 hover:bg-zinc-800"
                       : "bg-zinc-50 border-zinc-200 text-zinc-800 hover:bg-zinc-100 shadow-sm"
                       }`}
                   >
-                    <div className={`p-4 rounded-2xl ${isDarkMode ? "bg-zinc-800" : "bg-white shadow-sm"}`}>
+                    <div className={`p-2 rounded-xl ${isDarkMode ? "bg-zinc-800" : "bg-white shadow-sm"}`}>
                       <CameraIcon />
                     </div>
-                    <span className="text-sm font-black uppercase tracking-[0.2em]">Câmera</span>
+                    <span className="text-[10px] font-black uppercase tracking-widest">Câmera</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => galleryInputRef.current?.click()}
                     disabled={files.length >= remaining}
-                    className={`flex flex-col items-center justify-center gap-4 rounded-[2rem] border py-12 transition-all active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed ${isDarkMode
+                    className={`flex flex-col items-center justify-center gap-2 rounded-2xl border py-6 transition-all active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed ${isDarkMode
                       ? "bg-zinc-900 border-zinc-700 text-zinc-100 hover:bg-zinc-800"
                       : "bg-zinc-50 border-zinc-200 text-zinc-800 hover:bg-zinc-100 shadow-sm"
                       }`}
                   >
-                    <div className={`p-4 rounded-2xl ${isDarkMode ? "bg-zinc-800" : "bg-white shadow-sm"}`}>
+                    <div className={`p-2 rounded-xl ${isDarkMode ? "bg-zinc-800" : "bg-white shadow-sm"}`}>
                       <GalleryIcon />
                     </div>
-                    <span className="text-sm font-black uppercase tracking-[0.2em]">Galeria</span>
+                    <span className="text-[10px] font-black uppercase tracking-widest">Galeria</span>
                   </button>
                 </div>
               );
@@ -610,10 +608,8 @@ export function MainScreen() {
 
               <div className="flex flex-col items-center gap-6 py-4">
                 <div className="text-center">
-                  {isDragActive ? (
+                  {isDragActive && (
                     <span className="text-[#2868A0] font-black text-2xl uppercase tracking-widest">Solte as imagens aqui</span>
-                  ) : (
-                    <span className="text-zinc-500 font-black text-sm uppercase tracking-widest italic">Arraste fotos aqui para anexar</span>
                   )}
                 </div>
 
@@ -635,7 +631,7 @@ export function MainScreen() {
                           }}
                           className="absolute right-3 top-3 flex h-10 w-10 items-center justify-center rounded-xl bg-rose-500 text-white shadow-lg transition-all hover:bg-rose-600 active:scale-90"
                         >
-                          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
                         </button>
                       </div>
                     ))}
@@ -666,7 +662,7 @@ export function MainScreen() {
           <button
             onClick={submit}
             disabled={status.kind === "loading"}
-            className="rounded-[2.5rem] bg-[#2868A0] py-10 text-3xl font-black text-white shadow-2xl shadow-[#2868A0]/40 transition-all hover:bg-[#1f5f8c] active:scale-[0.98] disabled:opacity-60"
+            className="rounded-[1.5rem] bg-[#2868A0] py-6 text-2xl font-black text-white shadow-2xl shadow-[#2868A0]/40 transition-all hover:bg-[#1f5f8c] active:scale-[0.98] disabled:opacity-60"
           >
             {status.kind === "loading"
               ? status.message
@@ -688,7 +684,7 @@ export function MainScreen() {
           )}
         </section>
 
-        <section className={`rounded-2xl border p-5 transition-colors ${isDarkMode ? "border-zinc-800 bg-zinc-950/60" : "border-zinc-200 bg-white shadow-sm"}`}>
+        <section className={`rounded-3xl border p-4 transition-colors ${isDarkMode ? "border-zinc-800 bg-zinc-950/60" : "border-zinc-200 bg-white shadow-sm"}`}>
           <div className="flex items-center justify-between mb-6">
             <h2 className={`text-2xl font-black uppercase tracking-tight ${isDarkMode ? "text-white" : "text-zinc-900"}`}>
               Lançamentos Recentes
@@ -696,9 +692,8 @@ export function MainScreen() {
             <button
               onClick={() => fetchHistory(1)}
               disabled={historyLoading}
-              className={`text-xs uppercase font-black tracking-widest hover:underline disabled:opacity-50 px-4 py-2 rounded-xl border ${
-                isDarkMode ? "text-zinc-400 border-zinc-800 bg-zinc-900" : "text-zinc-500 border-zinc-200 bg-zinc-50"
-              }`}
+              className={`text-xs uppercase font-black tracking-widest hover:underline disabled:opacity-50 px-4 py-2 rounded-xl border ${isDarkMode ? "text-zinc-400 border-zinc-800 bg-zinc-900" : "text-zinc-500 border-zinc-200 bg-zinc-50"
+                }`}
             >
               {historyLoading ? "Atualizando..." : "Atualizar Lista"}
             </button>
@@ -714,8 +709,8 @@ export function MainScreen() {
                 <div
                   key={item.id}
                   onClick={() => setSelectedHistoryItem(item)}
-                  className={`flex flex-col gap-4 rounded-2xl border p-6 transition-all cursor-pointer hover:scale-[1.01] active:scale-95 ${isDarkMode 
-                    ? "bg-zinc-900/40 border-zinc-800 hover:bg-zinc-900/60 hover:border-zinc-700" 
+                  className={`flex flex-col gap-3 rounded-3xl border p-4 transition-all cursor-pointer hover:scale-[1.01] active:scale-95 ${isDarkMode
+                    ? "bg-zinc-900/40 border-zinc-800 hover:bg-zinc-900/60 hover:border-zinc-700"
                     : "bg-zinc-50 border-zinc-100 shadow-sm hover:bg-white hover:border-zinc-200 hover:shadow-md"
                     }`}
                 >
@@ -733,19 +728,17 @@ export function MainScreen() {
                         OS {item.os}
                       </h3>
                     </div>
-                    <div className={`flex items-center gap-2 rounded-xl px-4 py-2 border ${
-                      isDarkMode ? "bg-zinc-950 border-zinc-800 text-[#2868A0]" : "bg-white border-zinc-100 text-[#2868A0]"
-                    }`}>
+                    <div className={`flex items-center gap-2 rounded-xl px-4 py-2 border ${isDarkMode ? "bg-zinc-950 border-zinc-800 text-[#2868A0]" : "bg-white border-zinc-100 text-[#2868A0]"
+                      }`}>
                       <span className="text-sm font-black">{item.totalFotos}</span>
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
                     </div>
                   </div>
 
                   <div className="flex flex-wrap gap-2 mt-2">
                     {item.rdo_atividades?.map((atv, i) => (
-                      <span key={i} className={`inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 text-[11px] font-black uppercase tracking-tighter ${
-                        isDarkMode ? "bg-zinc-800/50 border-zinc-700 text-zinc-400" : "bg-zinc-100 border-zinc-200 text-zinc-500"
-                      }`}>
+                      <span key={i} className={`inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 text-[11px] font-black uppercase tracking-tighter ${isDarkMode ? "bg-zinc-800/50 border-zinc-700 text-zinc-400" : "bg-zinc-100 border-zinc-200 text-zinc-500"
+                        }`}>
                         {atv.wbs}
                         {atv.editado && <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]" />}
                       </span>
