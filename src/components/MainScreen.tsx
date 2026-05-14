@@ -117,7 +117,7 @@ export function MainScreen() {
           .select('role')
           .eq('id', user.id)
           .maybeSingle();
-        
+
         if (profile) {
           setUserRole(profile.role);
         } else if (user.email === 'wladmir.carmo@estaleiromaua.ind.br') {
@@ -371,18 +371,18 @@ export function MainScreen() {
                   href="/admin"
                   className={`p-2.5 rounded-xl border transition-all active:scale-95 ${isDarkMode
                     ? "bg-zinc-900 border-zinc-700 text-zinc-100 hover:bg-zinc-800"
-                    : "bg-white border-zinc-200 text-[#2868A0] hover:bg-zinc-100 shadow-sm"
+                    : "bg-white border-zinc-200 text-[#000000] hover:bg-zinc-100 shadow-sm"
                     }`}
                   title="Painel Administrativo"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
                 </Link>
               )}
               <button
                 onClick={async () => {
                   const supabase = createSupabaseBrowserClient();
                   const { data: { user } } = await supabase.auth.getUser();
-                  
+
                   if (user) {
                     try {
                       await supabase.from('audit_logs').insert({
@@ -475,8 +475,8 @@ export function MainScreen() {
                     key={type.id}
                     onClick={() => setDateFilterType(type.id as 'active' | 'start' | 'end')}
                     className={`px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-lg border transition-all ${dateFilterType === type.id
-                        ? "bg-[#2868A0] border-[#2868A0] text-white shadow-lg shadow-[#2868A0]/20"
-                        : isDarkMode ? "bg-zinc-900 border-zinc-700 text-zinc-400 hover:bg-zinc-800" : "bg-zinc-100 border-zinc-200 text-zinc-500 hover:bg-zinc-200"
+                      ? "bg-[#2868A0] border-[#2868A0] text-white shadow-lg shadow-[#2868A0]/20"
+                      : isDarkMode ? "bg-zinc-900 border-zinc-700 text-zinc-400 hover:bg-zinc-800" : "bg-zinc-100 border-zinc-200 text-zinc-500 hover:bg-zinc-200"
                       }`}
                   >
                     {type.label}

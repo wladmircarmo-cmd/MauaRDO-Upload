@@ -170,10 +170,10 @@ export default function AdminDashboard() {
               <table className="w-full text-left border-collapse table-auto">
                 <thead>
                   <tr className={`border-b ${isDarkMode ? "border-zinc-800 bg-zinc-900/50" : "bg-zinc-50 border-zinc-200"}`}>
-                    <th className="px-4 py-5 text-[10px] font-black uppercase tracking-widest text-zinc-500">Evento</th>
-                    <th className="px-4 py-5 text-[10px] font-black uppercase tracking-widest text-zinc-500">Usuário</th>
+                    <th className="px-4 py-5 w-[100px] text-[10px] font-black uppercase tracking-widest text-zinc-500">Evento</th>
+                    <th className="px-4 py-5 w-[250px] text-[10px] font-black uppercase tracking-widest text-zinc-500">Usuário</th>
                     <th className="px-4 py-5 text-[10px] font-black uppercase tracking-widest text-zinc-500">Detalhes</th>
-                    <th className="px-4 py-5 text-[10px] font-black uppercase tracking-widest text-zinc-500 text-right">Data/Hora</th>
+                    <th className="px-4 py-5 w-[150px] text-[10px] font-black uppercase tracking-widest text-zinc-500 text-right">Data/Hora</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-800/50">
@@ -189,8 +189,8 @@ export default function AdminDashboard() {
                           {log.action_type}
                         </span>
                       </td>
-                      <td className="px-4 py-6">
-                        <div className="font-bold text-xs break-all max-w-[180px]">{log.user_email}</div>
+                      <td className="px-4 py-6 whitespace-nowrap">
+                        <div className="font-bold text-xs">{log.user_email}</div>
                         <div className="text-[10px] text-zinc-600 font-mono">{log.ip_address}</div>
                       </td>
                       <td className="px-4 py-6">
@@ -200,9 +200,9 @@ export default function AdminDashboard() {
                           ) : log.details?.method || 'N/A'}
                         </div>
                       </td>
-                      <td className="px-4 py-6 text-right">
-                        <div className="text-xs font-bold whitespace-nowrap">
-                          {new Date(log.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' })}
+                      <td className="px-4 py-6 text-right whitespace-nowrap">
+                        <div className="text-xs font-bold">
+                          {new Date(log.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })}
                         </div>
                         <div className="text-[10px] text-zinc-500">
                           {new Date(log.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}

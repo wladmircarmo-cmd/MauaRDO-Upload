@@ -11,13 +11,12 @@ export async function GET(request: Request) {
 
   if (code) {
     const supabase = await createSupabaseServerClient()
-    const { error } = await supabase.auth.exchangeCodeForSession(code)
-    if (!error) {
+    const { data: { session }, error } = await supabase.auth.exchangeCodeForSession(code)
+    if (!error && session) {
+      const user = session.user;
       // Registrar log de Login
       try {
         const admin = createSupabaseAdminClient();
-        const { data: { user } } = await supabase.auth.getUser();
-        
         if (user) {
           const forwarded = request.headers.get('x-forwarded-for');
           const ip = forwarded ? forwarded.split(',')[0] : 'internal';
