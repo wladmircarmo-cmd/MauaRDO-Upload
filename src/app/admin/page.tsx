@@ -167,20 +167,20 @@ export default function AdminDashboard() {
             </div>
 
             <div className={`w-full rounded-[2rem] border overflow-hidden ${isDarkMode ? "bg-zinc-900/40 border-zinc-800" : "bg-white border-zinc-200 shadow-xl"}`}>
-              <table className="text-left border-collapse">
+              <table className="w-full text-left border-collapse table-auto">
                 <thead>
                   <tr className={`border-b ${isDarkMode ? "border-zinc-800 bg-zinc-900/50" : "bg-zinc-50 border-zinc-200"}`}>
-                    <th className="px-2 py-5 text-[10px] font-black uppercase tracking-widest text-zinc-500">Evento</th>
-                    <th className="px-2 py-5 text-[10px] font-black uppercase tracking-widest text-zinc-500">Usuário</th>
-                    <th className="px-2 py-5 text-[10px] font-black uppercase tracking-widest text-zinc-500">Detalhes</th>
-                    <th className="px-2 py-5 text-[10px] font-black uppercase tracking-widest text-zinc-500">Data/Hora</th>
+                    <th className="px-4 py-5 text-[10px] font-black uppercase tracking-widest text-zinc-500">Evento</th>
+                    <th className="px-4 py-5 text-[10px] font-black uppercase tracking-widest text-zinc-500">Usuário</th>
+                    <th className="px-4 py-5 text-[10px] font-black uppercase tracking-widest text-zinc-500">Detalhes</th>
+                    <th className="px-4 py-5 text-[10px] font-black uppercase tracking-widest text-zinc-500 text-right">Data/Hora</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-800/50">
                   {logs.map((log) => (
                     <tr key={log.id} className="hover:bg-zinc-800/30 transition-colors group">
-                      <td className="px-2 py-6">
-                        <span className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-tighter ${
+                      <td className="px-4 py-6">
+                        <span className={`px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-tighter whitespace-nowrap ${
                           log.action_type === 'LOGIN' ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20" :
                           log.action_type === 'LOGOUT' ? "bg-zinc-500/10 text-zinc-500 border border-zinc-500/20" :
                           log.action_type === 'RDO_EDIT' ? "bg-amber-500/10 text-amber-500 border border-amber-500/20" :
@@ -189,20 +189,24 @@ export default function AdminDashboard() {
                           {log.action_type}
                         </span>
                       </td>
-                      <td className="px-2 py-6">
-                        <div className="font-bold text-[11px]">{log.user_email}</div>
-                        <div className="text-[9px] text-zinc-600 font-mono">{log.ip_address}</div>
+                      <td className="px-4 py-6">
+                        <div className="font-bold text-xs break-all max-w-[180px]">{log.user_email}</div>
+                        <div className="text-[10px] text-zinc-600 font-mono">{log.ip_address}</div>
                       </td>
-                      <td className="px-2 py-6">
-                        <div className="text-[11px] text-zinc-400">
+                      <td className="px-4 py-6">
+                        <div className="text-xs text-zinc-400 break-words">
                           {log.action_type === 'RDO_UPLOAD' || log.action_type === 'RDO_EDIT' ? (
-                            `CC ${log.details?.cc} | OS ${log.details?.os}`
+                            `CC ${log.details?.cc} | OS ${log.details?.os} | ${log.details?.photos_count} fotos`
                           ) : log.details?.method || 'N/A'}
                         </div>
                       </td>
-                      <td className="px-2 py-6 text-left">
-                        <div className="text-[11px] font-bold whitespace-nowrap">{new Date(log.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}</div>
-                        <div className="text-[10px] text-zinc-500">{new Date(log.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</div>
+                      <td className="px-4 py-6 text-right">
+                        <div className="text-xs font-bold whitespace-nowrap">
+                          {new Date(log.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' })}
+                        </div>
+                        <div className="text-[10px] text-zinc-500">
+                          {new Date(log.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                        </div>
                       </td>
                     </tr>
                   ))}
