@@ -23,11 +23,17 @@ const GoogleIcon = () => (
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const supabase = createSupabaseBrowserClient();
 
   useEffect(() => {
     const saved = localStorage.getItem("rdo-theme");
     if (saved) setIsDarkMode(saved === "dark");
+
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("error") === "unauthorized") {
+      setError("Seu acesso ainda não foi autorizado. Entre em contato com o administrador para liberar seu e-mail.");
+    }
   }, []);
 
   const toggleTheme = () => {
@@ -85,6 +91,22 @@ export default function LoginPage() {
             </p>
           </div>
         </div>
+
+        {error && (
+          <div className={`-mt-8 p-6 rounded-3xl border animate-in zoom-in-95 duration-300 ${
+            isDarkMode 
+            ? "bg-rose-500/10 border-rose-500/20 text-rose-400" 
+            : "bg-rose-50 border-rose-200 text-rose-600"
+          }`}>
+            <div className="flex items-center justify-center gap-3 mb-2">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <span className="font-black uppercase tracking-widest text-sm">Acesso Negado</span>
+            </div>
+            <p className="font-medium text-lg leading-snug">
+              {error}
+            </p>
+          </div>
+        )}
 
         <button
           onClick={handleLogin}

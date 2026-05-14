@@ -6,6 +6,7 @@ import imageCompression from "browser-image-compression";
 import { normalizeWbs } from "@/lib/upload/validation";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { CCItem } from "@/lib/external-api";
+import Link from "next/link";
 
 type Status =
   | { kind: "idle" }
@@ -85,7 +86,7 @@ export function MainScreen() {
 
   // Initialize theme from localStorage
   useEffect(() => {
-    const savedTheme = localStorage.getItem("theme");
+    const savedTheme = localStorage.getItem("rdo-theme");
     if (savedTheme === "light") {
       setIsDarkMode(false);
     }
@@ -94,14 +95,41 @@ export function MainScreen() {
   const toggleTheme = () => {
     const newMode = !isDarkMode;
     setIsDarkMode(newMode);
-    localStorage.setItem("theme", newMode ? "dark" : "light");
+    localStorage.setItem("rdo-theme", newMode ? "dark" : "light");
   };
+
+  const [userRole, setUserRole] = useState<string | null>(null);
 
   useEffect(() => {
     const urls = files.map((f) => URL.createObjectURL(f.file));
     setPreviewUrls(urls);
     return () => urls.forEach((url) => URL.revokeObjectURL(url));
   }, [files]);
+
+  // Fetch User Role
+  useEffect(() => {
+    async function getRole() {
+      const supabase = createSupabaseBrowserClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .maybeSingle();
+        
+        if (profile) {
+          setUserRole(profile.role);
+        } else if (user.email === 'wladmir.carmo@estaleiromaua.ind.br') {
+          // Master key fallback if profile fetch fails
+          setUserRole('owner');
+        }
+      }
+    }
+    getRole();
+  }, []);
+
+  const isReadOnly = userRole === 'consulta';
 
 
   // Load History
@@ -338,9 +366,36 @@ export function MainScreen() {
 
           <div className="flex flex-col items-end gap-2">
             <div className="flex gap-2">
+              {(userRole === 'admin' || userRole === 'owner') && (
+                <Link
+                  href="/admin"
+                  className={`p-2.5 rounded-xl border transition-all active:scale-95 ${isDarkMode
+                    ? "bg-zinc-900 border-zinc-700 text-zinc-100 hover:bg-zinc-800"
+                    : "bg-white border-zinc-200 text-[#2868A0] hover:bg-zinc-100 shadow-sm"
+                    }`}
+                  title="Painel Administrativo"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                </Link>
+              )}
               <button
                 onClick={async () => {
                   const supabase = createSupabaseBrowserClient();
+                  const { data: { user } } = await supabase.auth.getUser();
+                  
+                  if (user) {
+                    try {
+                      await supabase.from('audit_logs').insert({
+                        user_id: user.id,
+                        user_email: user.email,
+                        action_type: 'LOGOUT',
+                        details: { method: 'manual_button' }
+                      });
+                    } catch (err) {
+                      console.error("Erro ao registrar log de logout:", err);
+                    }
+                  }
+
                   await supabase.auth.signOut();
                   window.location.reload();
                 }}
@@ -545,7 +600,7 @@ export function MainScreen() {
                   <button
                     type="button"
                     onClick={() => cameraInputRef.current?.click()}
-                    disabled={files.length >= remaining}
+                    disabled={isReadOnly || files.length >= remaining}
                     className={`flex flex-col items-center justify-center gap-2 rounded-2xl border py-6 transition-all active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed ${isDarkMode
                       ? "bg-zinc-900 border-zinc-700 text-zinc-100 hover:bg-zinc-800"
                       : "bg-zinc-50 border-zinc-200 text-zinc-800 hover:bg-zinc-100 shadow-sm"
@@ -559,7 +614,7 @@ export function MainScreen() {
                   <button
                     type="button"
                     onClick={() => galleryInputRef.current?.click()}
-                    disabled={files.length >= remaining}
+                    disabled={isReadOnly || files.length >= remaining}
                     className={`flex flex-col items-center justify-center gap-2 rounded-2xl border py-6 transition-all active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed ${isDarkMode
                       ? "bg-zinc-900 border-zinc-700 text-zinc-100 hover:bg-zinc-800"
                       : "bg-zinc-50 border-zinc-200 text-zinc-800 hover:bg-zinc-100 shadow-sm"
@@ -600,13 +655,13 @@ export function MainScreen() {
             })()}
 
             <div
-              {...getRootProps()}
+              {...(isReadOnly ? {} : getRootProps())}
               className={`rounded-[2rem] border-2 border-dashed p-10 transition-all duration-300 ${isDragActive
                 ? "border-[#2868A0] bg-[#2868A0]/10 scale-[1.02]"
                 : isDarkMode ? "border-zinc-800 bg-zinc-900/20" : "border-zinc-200 bg-zinc-50"
-                }`}
+                } ${isReadOnly ? "opacity-50 cursor-not-allowed" : ""}`}
             >
-              <input {...getInputProps()} />
+              {!isReadOnly && <input {...getInputProps()} />}
 
               <div className="flex flex-col items-center gap-6 py-4">
                 <div className="text-center">
@@ -663,15 +718,16 @@ export function MainScreen() {
         <section className="flex flex-col gap-6">
           <button
             onClick={submit}
-            disabled={status.kind === "loading"}
+            disabled={isReadOnly || status.kind === "loading"}
             className="rounded-[1.5rem] bg-[#2868A0] py-6 text-2xl font-black text-white shadow-2xl shadow-[#2868A0]/40 transition-all hover:bg-[#1f5f8c] active:scale-[0.98] disabled:opacity-60"
           >
-            {status.kind === "loading"
-              ? status.message
-              : history.find(h => h.cc === cc && h.data === date)?.rdo_atividades.some(a => normalizeWbs(a.wbs) === normalizeWbs(wbs))
-                ? "Atualizar RDO"
-                : "Enviar RDO"
-            }
+            {isReadOnly ? "ACESSO APENAS PARA CONSULTA" : (
+              status.kind === "loading"
+                ? status.message
+                : history.find(h => h.cc === cc && h.data === date)?.rdo_atividades.some(a => normalizeWbs(a.wbs) === normalizeWbs(wbs))
+                  ? "Atualizar RDO"
+                  : "Enviar RDO"
+            )}
           </button>
 
           {status.kind !== "idle" && status.kind !== "loading" && (

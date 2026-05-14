@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 import {
   assertValidFile,
   normalizeWbs,
@@ -49,7 +50,25 @@ export async function POST(request: Request) {
       );
     }
 
+    const supabase = await createSupabaseServerClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json({ error: "Sessão expirada ou usuário não autenticado" }, { status: 401 });
+    }
+
     const admin = createSupabaseAdminClient();
+    
+    // Verificar se usuário tem permissão de escrita
+    const { data: profile } = await admin
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    if (profile?.role === 'consulta') {
+      return NextResponse.json({ error: "Seu perfil permite apenas consulta (leitura)" }, { status: 403 });
+    }
 
     // New RDO logic
     try {
@@ -105,13 +124,16 @@ export async function POST(request: Request) {
       
       const { data: ativData, error: ativQueryError } = await admin
         .from("rdo_atividades")
-        .select("id_atividade")
+        .select("id_atividade, comentario")
         .eq("id_rdo_os", id_rdo_os)
         .eq("tarefa", normalizedWbs)
         .maybeSingle();
 
       let id_atividade: number;
       if (ativQueryError) throw ativQueryError;
+
+      let isEdit = false;
+      let oldComment = null;
 
       if (!ativData) {
         const { data: newAtiv, error: createAtivError } = await admin
@@ -127,6 +149,8 @@ export async function POST(request: Request) {
         id_atividade = newAtiv.id_atividade;
       } else {
         id_atividade = ativData.id_atividade;
+        oldComment = ativData.comentario;
+        isEdit = true;
         // Atualizar o comentário e o timestamp de edição
         const { error: updateError } = await admin
           .from("rdo_atividades")
@@ -176,6 +200,32 @@ export async function POST(request: Request) {
         }
         
         results.push(supabasePath);
+      }
+
+      // 5. Audit Log Insertion
+      try {
+        const forwarded = request.headers.get("x-forwarded-for");
+        const ip = forwarded ? forwarded.split(",")[0] : "internal";
+        
+        await admin.from("audit_logs").insert({
+          user_id: user.id,
+          user_email: user.email,
+          action_type: isEdit ? "RDO_EDIT" : "RDO_UPLOAD",
+          entity_id: id_atividade.toString(),
+          ip_address: ip,
+          details: {
+            cc: parsed.data.cc,
+            os: parsed.data.os,
+            wbs: normalizedWbs,
+            photos_count: results.length,
+            rdo_id: id_rdo,
+            previous_comment: isEdit ? oldComment : undefined,
+            new_comment: commentValue
+          }
+        });
+      } catch (logError) {
+        console.error("Audit log error (non-blocking):", logError);
+        // We don't block the response if the log fails, but we record it in console
       }
 
       return NextResponse.json({ 
