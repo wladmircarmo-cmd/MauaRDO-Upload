@@ -166,8 +166,8 @@ export default function AdminDashboard() {
               </button>
             </div>
 
-            <div className={`rounded-[2rem] border overflow-x-auto ${isDarkMode ? "bg-zinc-900/40 border-zinc-800" : "bg-white border-zinc-200 shadow-xl"}`}>
-              <table className="w-full min-w-[800px] text-left border-collapse">
+            <div className={`w-full rounded-[2rem] border overflow-x-auto ${isDarkMode ? "bg-zinc-900/40 border-zinc-800" : "bg-white border-zinc-200 shadow-xl"}`}>
+              <table className="w-full min-w-[1100px] text-left border-collapse">
                 <thead>
                   <tr className={`border-b ${isDarkMode ? "border-zinc-800 bg-zinc-900/50" : "bg-zinc-50 border-zinc-200"}`}>
                     <th className="px-4 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Evento</th>
@@ -194,7 +194,7 @@ export default function AdminDashboard() {
                         <div className="text-[10px] text-zinc-600 font-mono">{log.ip_address}</div>
                       </td>
                       <td className="px-4 py-6">
-                        <div className="text-xs text-zinc-400 max-w-md truncate">
+                        <div className="text-xs text-zinc-400">
                           {log.action_type === 'RDO_UPLOAD' || log.action_type === 'RDO_EDIT' ? (
                             `CC ${log.details?.cc} | OS ${log.details?.os} | ${log.details?.photos_count} fotos`
                           ) : log.details?.method || 'N/A'}
