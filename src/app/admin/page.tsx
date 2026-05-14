@@ -167,13 +167,13 @@ export default function AdminDashboard() {
             </div>
 
             <div className={`w-full rounded-[2rem] border overflow-x-auto ${isDarkMode ? "bg-zinc-900/40 border-zinc-800" : "bg-white border-zinc-200 shadow-xl"}`}>
-              <table className="w-full min-w-[1100px] text-left border-collapse">
+              <table className="w-full min-w-[1200px] text-left border-collapse">
                 <thead>
                   <tr className={`border-b ${isDarkMode ? "border-zinc-800 bg-zinc-900/50" : "bg-zinc-50 border-zinc-200"}`}>
                     <th className="px-4 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Evento</th>
                     <th className="px-4 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Usuário</th>
                     <th className="px-4 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Detalhes</th>
-                    <th className="px-4 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 text-right">Data/Hora</th>
+                    <th className="px-4 pr-12 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 text-right">Data/Hora</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-800/50">
@@ -200,7 +200,7 @@ export default function AdminDashboard() {
                           ) : log.details?.method || 'N/A'}
                         </div>
                       </td>
-                      <td className="px-4 py-6 text-right">
+                      <td className="px-4 pr-12 py-6 text-right">
                         <div className="text-sm font-bold">{new Date(log.created_at).toLocaleDateString('pt-BR')}</div>
                         <div className="text-xs text-zinc-500">{new Date(log.created_at).toLocaleTimeString('pt-BR')}</div>
                       </td>
