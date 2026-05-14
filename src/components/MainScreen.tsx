@@ -112,17 +112,28 @@ export function MainScreen() {
       const supabase = createSupabaseBrowserClient();
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        const { data: profile } = await supabase
-          .from('profiles')
+        // 1. Sempre prioriza a Whitelist (authorized_users) - É a fonte da verdade
+        const { data: authUser } = await supabase
+          .from('authorized_users')
           .select('role')
-          .eq('id', user.id)
+          .eq('email', user.email)
           .maybeSingle();
+        
+        if (authUser) {
+          setUserRole(authUser.role);
+        } else {
+          // 2. Fallback para Profile (apenas se não estiver na whitelist, ex: owner ou erro)
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', user.id)
+            .maybeSingle();
 
-        if (profile) {
-          setUserRole(profile.role);
-        } else if (user.email === 'wladmir.carmo@estaleiromaua.ind.br') {
-          // Master key fallback if profile fetch fails
-          setUserRole('owner');
+          if (profile?.role) {
+            setUserRole(profile.role);
+          } else if (user.email === 'wladmir.carmo@estaleiromaua.ind.br' || user.email === 'alexander.araujo@estaleiromaua.ind.br') {
+            setUserRole('owner');
+          }
         }
       }
     }
@@ -130,6 +141,8 @@ export function MainScreen() {
   }, []);
 
   const isReadOnly = userRole === 'consulta';
+  const isAdmin = userRole === 'admin' || userRole === 'owner';
+  const canWrite = userRole === 'user' || userRole === 'admin' || userRole === 'owner' || userRole === 'assistente de planejamento' || userRole === 'auxiliar de planejamento';
 
 
   // Load History
@@ -366,7 +379,7 @@ export function MainScreen() {
 
           <div className="flex flex-col items-end gap-2">
             <div className="flex gap-2">
-              {(userRole === 'admin' || userRole === 'owner') && (
+              {isAdmin && (
                 <Link
                   href="/admin"
                   className={`p-2.5 rounded-xl border transition-all active:scale-95 ${isDarkMode
@@ -594,13 +607,15 @@ export function MainScreen() {
                   </div>
                 );
               }
+              
+              if (!canWrite) return null;
 
               return (
                 <div className="grid grid-cols-2 gap-4">
                   <button
                     type="button"
                     onClick={() => cameraInputRef.current?.click()}
-                    disabled={isReadOnly || files.length >= remaining}
+                    disabled={files.length >= remaining}
                     className={`flex flex-col items-center justify-center gap-2 rounded-2xl border py-6 transition-all active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed ${isDarkMode
                       ? "bg-zinc-900 border-zinc-700 text-zinc-100 hover:bg-zinc-800"
                       : "bg-zinc-50 border-zinc-200 text-zinc-800 hover:bg-zinc-100 shadow-sm"
@@ -614,7 +629,7 @@ export function MainScreen() {
                   <button
                     type="button"
                     onClick={() => galleryInputRef.current?.click()}
-                    disabled={isReadOnly || files.length >= remaining}
+                    disabled={files.length >= remaining}
                     className={`flex flex-col items-center justify-center gap-2 rounded-2xl border py-6 transition-all active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed ${isDarkMode
                       ? "bg-zinc-900 border-zinc-700 text-zinc-100 hover:bg-zinc-800"
                       : "bg-zinc-50 border-zinc-200 text-zinc-800 hover:bg-zinc-100 shadow-sm"
@@ -654,52 +669,33 @@ export function MainScreen() {
               );
             })()}
 
-            <div
-              {...(isReadOnly ? {} : getRootProps())}
-              className={`rounded-[2rem] border-2 border-dashed p-10 transition-all duration-300 ${isDragActive
-                ? "border-[#2868A0] bg-[#2868A0]/10 scale-[1.02]"
-                : isDarkMode ? "border-zinc-800 bg-zinc-900/20" : "border-zinc-200 bg-zinc-50"
-                } ${isReadOnly ? "opacity-50 cursor-not-allowed" : ""}`}
-            >
-              {!isReadOnly && <input {...getInputProps()} />}
+            {!canWrite && (
+              <div className={`rounded-2xl px-8 py-14 text-center border border-dashed border-zinc-800 transition-colors ${isDarkMode ? "bg-zinc-900/40 text-zinc-500" : "bg-zinc-50 text-zinc-400"}`}>
+                <p className="text-xs font-black uppercase tracking-widest">Acesso apenas para consulta</p>
+              </div>
+            )}
 
-              <div className="flex flex-col items-center gap-6 py-4">
-                <div className="text-center">
-                  {isDragActive && (
-                    <span className="text-[#2868A0] font-black text-2xl uppercase tracking-widest">Solte as imagens aqui</span>
-                  )}
-                </div>
-
-                {previewUrls.length > 0 ? (
-                  <div className="grid grid-cols-2 gap-4 w-full">
-                    {previewUrls.map((url, index) => (
-                      <div key={url} className={`group relative overflow-hidden rounded-2xl border-2 bg-black ${isDarkMode ? "border-zinc-800" : "border-zinc-200"}`}>
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={url}
-                          alt={`Preview ${index + 1}`}
-                          className="aspect-square w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                        />
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            removeFile(index);
-                          }}
-                          className="absolute right-3 top-3 flex h-10 w-10 items-center justify-center rounded-xl bg-rose-500 text-white shadow-lg transition-all hover:bg-rose-600 active:scale-90"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
-                        </button>
-                      </div>
-                    ))}
+            {canWrite && (
+              <div
+                {...getRootProps()}
+                className={`rounded-[2rem] border-2 border-dashed p-10 transition-all duration-300 ${isDragActive
+                  ? "border-[#2868A0] bg-[#2868A0]/10 scale-[1.02]"
+                  : isDarkMode ? "border-zinc-800 bg-zinc-900/20" : "border-zinc-200 bg-zinc-50"
+                  }`}
+              >
+                <input {...getInputProps()} />
+                <div className="flex flex-col items-center gap-6 py-4">
+                  <div className="text-center">
+                    {isDragActive && (
+                      <span className="text-[#2868A0] font-black text-2xl uppercase tracking-widest">Solte as imagens aqui</span>
+                    )}
                   </div>
-                ) : (
                   <div className={`rounded-2xl px-8 py-14 text-center text-sm font-bold uppercase tracking-widest transition-colors ${isDarkMode ? "bg-zinc-900/40 text-zinc-700" : "bg-zinc-200/50 text-zinc-400"}`}>
                     Nenhuma imagem selecionada
                   </div>
-                )}
+                </div>
               </div>
-            </div>
+            )}
             {(() => {
               const alreadyUploaded = history.find(h => h.cc === cc && h.data === date)?.rdo_atividades.find(a => normalizeWbs(a.wbs) === normalizeWbs(wbs))?.fotos || 0;
               const remaining = 4 - alreadyUploaded;
@@ -715,32 +711,33 @@ export function MainScreen() {
           </div>
         </section>
 
-        <section className="flex flex-col gap-6">
-          <button
-            onClick={submit}
-            disabled={isReadOnly || status.kind === "loading"}
-            className="rounded-[1.5rem] bg-[#2868A0] py-6 text-2xl font-black text-white shadow-2xl shadow-[#2868A0]/40 transition-all hover:bg-[#1f5f8c] active:scale-[0.98] disabled:opacity-60"
-          >
-            {isReadOnly ? "ACESSO APENAS PARA CONSULTA" : (
-              status.kind === "loading"
+        {canWrite && (
+          <section className="flex flex-col gap-6">
+            <button
+              onClick={submit}
+              disabled={status.kind === "loading"}
+              className="rounded-[1.5rem] bg-[#2868A0] py-6 text-2xl font-black text-white shadow-2xl shadow-[#2868A0]/40 transition-all hover:bg-[#1f5f8c] active:scale-[0.98] disabled:opacity-60"
+            >
+              {status.kind === "loading"
                 ? status.message
                 : history.find(h => h.cc === cc && h.data === date)?.rdo_atividades.some(a => normalizeWbs(a.wbs) === normalizeWbs(wbs))
                   ? "Atualizar RDO"
                   : "Enviar RDO"
-            )}
-          </button>
+              }
+            </button>
 
-          {status.kind !== "idle" && status.kind !== "loading" && (
-            <div
-              className={`rounded-[1.5rem] border px-6 py-6 text-lg font-bold transition-all shadow-lg animate-in fade-in slide-in-from-top-2 ${status.kind === "success"
-                ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-500"
-                : "border-rose-500/50 bg-rose-500/10 text-rose-500"
-                }`}
-            >
-              {status.message}
-            </div>
-          )}
-        </section>
+            {status.kind !== "idle" && status.kind !== "loading" && (
+              <div
+                className={`rounded-[1.5rem] border px-6 py-6 text-lg font-bold transition-all shadow-lg animate-in fade-in slide-in-from-top-2 ${status.kind === "success"
+                  ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-500"
+                  : "border-rose-500/50 bg-rose-500/10 text-rose-500"
+                  }`}
+              >
+                {status.message}
+              </div>
+            )}
+          </section>
+        )}
 
         <section className={`rounded-3xl border p-4 transition-colors ${isDarkMode ? "border-zinc-800 bg-zinc-950/60" : "border-zinc-200 bg-white shadow-sm"}`}>
           <div className="flex items-center justify-between mb-6">

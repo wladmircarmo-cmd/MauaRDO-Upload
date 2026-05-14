@@ -36,8 +36,12 @@ export async function middleware(request: NextRequest) {
     if (authUser) {
       userRole = authUser.role;
     } else {
-      // 2. Se não estiver na whitelist, checa se é o Owner (contingência)
-      if (user.email === 'wladmir.carmo@estaleiromaua.ind.br') {
+      // 2. Se não estiver na whitelist, checa se é um dos Owners (contingência)
+      const owners = [
+        'wladmir.carmo@estaleiromaua.ind.br',
+        'alexander.araujo@estaleiromaua.ind.br'
+      ];
+      if (owners.includes(user.email || '')) {
         userRole = 'owner';
       }
     }

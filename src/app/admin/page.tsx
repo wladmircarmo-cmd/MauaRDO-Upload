@@ -29,19 +29,24 @@ export default function AdminDashboard() {
   const [newRole, setNewRole] = useState("user");
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(0);
+  const itemsPerPage = 10;
   
   const supabase = createSupabaseBrowserClient();
 
   const fetchData = useCallback(async () => {
     try {
-      // Fetch Logs
+      // Fetch Logs with Pagination
+      const from = currentPage * itemsPerPage;
+      const to = from + itemsPerPage - 1;
+
       const { data: logsData } = await supabase
         .from('audit_logs')
         .select('*')
         .order('created_at', { ascending: false })
-        .limit(50);
+        .range(from, to);
       
-      // Fetch Authorized Users
+      // Fetch Authorized Users (todos)
       const { data: usersData } = await supabase
         .from('authorized_users')
         .select('*')
@@ -52,7 +57,7 @@ export default function AdminDashboard() {
     } catch (error) {
       console.error("Error fetching admin data:", error);
     }
-  }, [supabase]);
+  }, [supabase, currentPage]);
  
   useEffect(() => {
     const getRole = async () => {
@@ -213,6 +218,27 @@ export default function AdminDashboard() {
                   ))}
                 </tbody>
               </table>
+
+              {/* Paginação */}
+              <div className="px-4 py-4 border-t border-zinc-800/50 flex items-center justify-between">
+                <button
+                  onClick={() => setCurrentPage(prev => Math.max(0, prev - 1))}
+                  disabled={currentPage === 0}
+                  className="px-4 py-2 text-[10px] font-black tracking-widest uppercase border border-zinc-800 rounded-lg hover:bg-zinc-800 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                >
+                  Anterior
+                </button>
+                <span className="text-[10px] font-black tracking-widest uppercase text-zinc-500">
+                  Página {currentPage + 1}
+                </span>
+                <button
+                  onClick={() => setCurrentPage(prev => prev + 1)}
+                  disabled={logs.length < itemsPerPage}
+                  className="px-4 py-2 text-[10px] font-black tracking-widest uppercase border border-zinc-800 rounded-lg hover:bg-zinc-800 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                >
+                  Próximo
+                </button>
+              </div>
             </div>
           </div>
         ) : userRole === 'owner' ? (
