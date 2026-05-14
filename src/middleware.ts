@@ -18,53 +18,28 @@ export async function middleware(request: NextRequest) {
     })
   }
 
-  // Log de Login Automático (Rede de Segurança Master)
-  if (user && !request.cookies.has('rdo_audit_login')) {
-    try {
-      const admin = createSupabaseAdminClient();
-      const forwarded = request.headers.get('x-forwarded-for');
-      const ip = forwarded ? forwarded.split(',')[0] : 'middleware-api';
-      
-      await admin.from('audit_logs').insert({
-        user_id: user.id,
-        user_email: user.email,
-        action_type: 'LOGIN',
-        ip_address: ip,
-        details: { method: 'middleware_auto_log', device: 'next_middleware' }
-      });
-      
-      // Marcar como logado para não repetir nesta sessão
-      response.cookies.set('rdo_audit_login', 'true', { maxAge: 60 * 60 * 24 }); // 24h
-    } catch (e) {
-      console.error('Middleware Log Error:', e);
-    }
-  }
-
   // Verificação de Autorização (Whitelist e Domínio)
   if (user && !isAuthPage) {
     const isMauaEmail = user.email?.endsWith('@estaleiromaua.ind.br');
     
-    // Buscar perfil (usando logica de admin para não depender de RLS no middleware)
-    const { data: profile } = await supabase
-      .from('profiles')
+    // Verificação de Autorização (Sempre checa a Whitelist em tempo real usando ADMIN)
+    const admin = createSupabaseAdminClient();
+    let userRole = null;
+    
+    // 1. Tenta buscar na whitelist (authorized_users) - É o controle mestre
+    const { data: authUser } = await admin
+      .from('authorized_users')
       .select('role')
-      .eq('id', user.id)
+      .eq('email', user.email)
       .maybeSingle();
-
-    // Se falhar em pegar o perfil, tentamos buscar na whitelist diretamente
-    let userRole = profile?.role;
-    if (!userRole) {
-       const { data: authUser } = await supabase
-         .from('authorized_users')
-         .select('role')
-         .eq('email', user.email)
-         .maybeSingle();
-       userRole = authUser?.role;
-    }
-
-    // Contingência Master para o Owner
-    if (user.email === 'wladmir.carmo@estaleiromaua.ind.br') {
-      userRole = 'owner';
+    
+    if (authUser) {
+      userRole = authUser.role;
+    } else {
+      // 2. Se não estiver na whitelist, checa se é o Owner (contingência)
+      if (user.email === 'wladmir.carmo@estaleiromaua.ind.br') {
+        userRole = 'owner';
+      }
     }
 
     const isGuest = !userRole || userRole === 'guest';
