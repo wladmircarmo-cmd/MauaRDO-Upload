@@ -109,7 +109,7 @@ export default function AdminDashboard() {
     <div className={`min-h-screen transition-colors duration-300 ${isDarkMode ? "bg-zinc-950 text-white" : "bg-zinc-50 text-zinc-900"}`}>
       {/* Header */}
       <header className={`border-b sticky top-0 z-50 backdrop-blur-md ${isDarkMode ? "bg-zinc-950/80 border-zinc-800" : "bg-white/80 border-zinc-200"}`}>
-        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+        <div className="max-w-5xl mx-auto px-6 py-4 flex flex-col md:flex-row items-center justify-between gap-4 md:h-20">
           <div className="flex items-center gap-4">
             <Link href="/" className="p-2 rounded-xl hover:bg-zinc-800 transition-all">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
@@ -153,7 +153,7 @@ export default function AdminDashboard() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto p-8">
+      <main className="max-w-5xl mx-auto p-4">
         {activeTab === 'logs' ? (
           <div className="space-y-6">
             <div className="flex items-center justify-between mb-8">
@@ -166,20 +166,20 @@ export default function AdminDashboard() {
               </button>
             </div>
 
-            <div className={`rounded-[2rem] border overflow-hidden ${isDarkMode ? "bg-zinc-900/40 border-zinc-800" : "bg-white border-zinc-200 shadow-xl"}`}>
-              <table className="w-full text-left border-collapse">
+            <div className={`rounded-[2rem] border overflow-x-auto ${isDarkMode ? "bg-zinc-900/40 border-zinc-800" : "bg-white border-zinc-200 shadow-xl"}`}>
+              <table className="w-full min-w-[800px] text-left border-collapse">
                 <thead>
                   <tr className={`border-b ${isDarkMode ? "border-zinc-800 bg-zinc-900/50" : "bg-zinc-50 border-zinc-200"}`}>
-                    <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Evento</th>
-                    <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Usuário</th>
-                    <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Detalhes</th>
-                    <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 text-right">Data/Hora</th>
+                    <th className="px-4 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Evento</th>
+                    <th className="px-4 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Usuário</th>
+                    <th className="px-4 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Detalhes</th>
+                    <th className="px-4 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 text-right">Data/Hora</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-800/50">
                   {logs.map((log) => (
                     <tr key={log.id} className="hover:bg-zinc-800/30 transition-colors group">
-                      <td className="px-8 py-6">
+                      <td className="px-4 py-6">
                         <span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-tighter ${
                           log.action_type === 'LOGIN' ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20" :
                           log.action_type === 'LOGOUT' ? "bg-zinc-500/10 text-zinc-500 border border-zinc-500/20" :
@@ -189,18 +189,18 @@ export default function AdminDashboard() {
                           {log.action_type}
                         </span>
                       </td>
-                      <td className="px-8 py-6">
+                      <td className="px-4 py-6">
                         <div className="font-bold text-sm">{log.user_email}</div>
                         <div className="text-[10px] text-zinc-600 font-mono">{log.ip_address}</div>
                       </td>
-                      <td className="px-8 py-6">
+                      <td className="px-4 py-6">
                         <div className="text-xs text-zinc-400 max-w-md truncate">
                           {log.action_type === 'RDO_UPLOAD' || log.action_type === 'RDO_EDIT' ? (
                             `CC ${log.details?.cc} | OS ${log.details?.os} | ${log.details?.photos_count} fotos`
                           ) : log.details?.method || 'N/A'}
                         </div>
                       </td>
-                      <td className="px-8 py-6 text-right">
+                      <td className="px-4 py-6 text-right">
                         <div className="text-sm font-bold">{new Date(log.created_at).toLocaleDateString('pt-BR')}</div>
                         <div className="text-xs text-zinc-500">{new Date(log.created_at).toLocaleTimeString('pt-BR')}</div>
                       </td>
