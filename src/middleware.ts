@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { updateSession } from '@/lib/supabase/middleware'
+import { createSupabaseAdminClient } from '@/lib/supabase/admin'
 
 export async function middleware(request: NextRequest) {
   const { supabase, response } = await updateSession(request)
@@ -15,6 +16,28 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url, {
       headers: response.headers,
     })
+  }
+
+  // Log de Login Automático (Rede de Segurança Master)
+  if (user && !request.cookies.has('rdo_audit_login')) {
+    try {
+      const admin = createSupabaseAdminClient();
+      const forwarded = request.headers.get('x-forwarded-for');
+      const ip = forwarded ? forwarded.split(',')[0] : 'middleware-api';
+      
+      await admin.from('audit_logs').insert({
+        user_id: user.id,
+        user_email: user.email,
+        action_type: 'LOGIN',
+        ip_address: ip,
+        details: { method: 'middleware_auto_log', device: 'next_middleware' }
+      });
+      
+      // Marcar como logado para não repetir nesta sessão
+      response.cookies.set('rdo_audit_login', 'true', { maxAge: 60 * 60 * 24 }); // 24h
+    } catch (e) {
+      console.error('Middleware Log Error:', e);
+    }
   }
 
   // Verificação de Autorização (Whitelist e Domínio)
