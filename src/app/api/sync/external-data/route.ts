@@ -135,7 +135,7 @@ function buildTaskRows(tasks: ExternalWbsItem[], now: string): ExternalTaskUpser
         };
       })
       .filter((row): row is ExternalTaskUpsertRow => Boolean(row)),
-    (row) => row.id_eap,
+    (row) => [row.cod_ccusto, row.os, row.wbs].filter(Boolean).join("|") || row.id_eap,
   );
 }
 
