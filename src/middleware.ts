@@ -3,6 +3,10 @@ import { updateSession } from '@/lib/supabase/middleware'
 import { createSupabaseAdminClient } from '@/lib/supabase/admin'
 
 export async function middleware(request: NextRequest) {
+  if (request.nextUrl.pathname.startsWith('/api/sync/')) {
+    return NextResponse.next()
+  }
+
   const { supabase, response } = await updateSession(request)
   
   const { data: { user } } = await supabase.auth.getUser()
