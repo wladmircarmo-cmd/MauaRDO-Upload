@@ -7,9 +7,8 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 /**
  * Handles the OAuth redirect from Supabase.
  * After the user authenticates with Google, Supabase redirects back to
- * `${origin}/auth/callback` with the session information.
- * We use `supabase.auth.getSessionFromUrl` which processes both query and hash
- * parameters, stores the session, and then redirects the user.
+ * `${origin}/auth/callback` with a `code` query parameter.
+ * We exchange this code for a session using `supabase.auth.exchangeCodeForSession`.
  */
 export default function CallbackPage() {
   const router = useRouter();
@@ -17,14 +16,19 @@ export default function CallbackPage() {
 
   useEffect(() => {
     const handleCallback = async () => {
-      const { error } = await supabase.auth.getSessionFromUrl({
-        storeSession: true,
-      });
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get("code");
+      if (!code) {
+        router.replace("/login?error=unauthorized");
+        return;
+      }
+      const { error } = await supabase.auth.exchangeCodeForSession(code);
       if (error) {
         console.error("Supabase callback error:", error);
         router.replace("/login?error=unauthorized");
         return;
       }
+      // Successful login – redirect to home
       router.replace("/");
     };
     handleCallback();
