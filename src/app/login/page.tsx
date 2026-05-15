@@ -131,7 +131,7 @@ export default function LoginPage() {
       </div>
 
       <div className="absolute bottom-8 text-[10px] uppercase tracking-widest text-zinc-600">
-        Mauá Engenharia &copy; {new Date().getFullYear()}
+        Mauá Departamento Técnico &copy; {new Date().getFullYear()}
       </div>
     </div>
   );
