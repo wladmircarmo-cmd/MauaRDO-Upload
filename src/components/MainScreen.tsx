@@ -688,10 +688,11 @@ export function MainScreen() {
               <p className={`text-xl font-black uppercase tracking-tight ${isDarkMode ? "text-white" : "text-[#364B59]"}`}>Imagens</p>
               {(() => {
                 const alreadyUploaded = history.find(h => h.cc === cc && h.data === date)?.rdo_atividades.find(a => normalizeWbs(a.wbs) === normalizeWbs(wbs))?.fotos || 0;
+                const totalSelected = alreadyUploaded + files.length;
                 return (
                   <span className={`text-base font-black px-5 py-2 rounded-xl border ${isDarkMode ? "bg-[#364B59]/10 border-[#364B59]/30 text-[#364B59]" : "bg-[#364B59]/5 border-[#364B59]/20 text-[#364B59]"
                     }`}>
-                    {alreadyUploaded}/4 ENVIADAS
+                    {totalSelected}/4 {files.length > 0 ? "SELECIONADAS" : "ENVIADAS"}
                   </span>
                 );
               })()}
@@ -792,9 +793,37 @@ export function MainScreen() {
                       <span className="text-[#364B59] font-black text-2xl uppercase tracking-widest">Solte as imagens aqui</span>
                     )}
                   </div>
-                  <div className={`rounded-2xl px-8 py-14 text-center text-sm font-bold uppercase tracking-widest transition-colors ${isDarkMode ? "bg-zinc-900/40 text-zinc-700" : "bg-zinc-200/50 text-zinc-400"}`}>
-                    Nenhuma imagem selecionada
-                  </div>
+                  {files.length > 0 ? (
+                    <div className="grid w-full grid-cols-2 gap-4 md:grid-cols-4">
+                      {files.map((item, index) => (
+                        <div key={`${item.file.name}-${index}`} className={`group relative overflow-hidden rounded-2xl border ${isDarkMode ? "border-zinc-700 bg-zinc-900" : "border-zinc-200 bg-white shadow-sm"}`}>
+                          <img
+                            src={previewUrls[index]}
+                            alt={`Imagem selecionada ${index + 1}`}
+                            className="h-36 w-full object-cover"
+                          />
+                          <div className="absolute left-2 top-2 rounded-lg bg-black/60 px-2 py-1 text-[9px] font-black uppercase tracking-widest text-white">
+                            {item.uploadType === "camera" ? "Camera" : "Galeria"}
+                          </div>
+                          <button
+                            type="button"
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              removeFile(index);
+                            }}
+                            className="absolute right-2 top-2 grid h-8 w-8 place-items-center rounded-full bg-white text-rose-500 shadow-lg transition-all hover:scale-105"
+                            aria-label="Remover imagem"
+                          >
+                            <CloseIcon />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className={`rounded-2xl px-8 py-14 text-center text-sm font-bold uppercase tracking-widest transition-colors ${isDarkMode ? "bg-zinc-900/40 text-zinc-700" : "bg-zinc-200/50 text-zinc-400"}`}>
+                      Nenhuma imagem selecionada
+                    </div>
+                  )}
                 </div>
               </div>
             )}
