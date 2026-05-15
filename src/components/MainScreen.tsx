@@ -58,6 +58,26 @@ const GalleryIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2" /><circle cx="9" cy="9" r="2" /><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" /></svg>
 );
 
+const MenuIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 7h16" /><path d="M4 12h16" /><path d="M4 17h16" /></svg>
+);
+
+const CloseIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
+);
+
+const ShieldIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
+);
+
+const SearchPanelIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 5h18" /><path d="M3 12h10" /><path d="M3 19h6" /><circle cx="17" cy="17" r="3" /><path d="m21 21-1.9-1.9" /></svg>
+);
+
+const LogoutIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></svg>
+);
+
 export function MainScreen() {
   const [wbs, setWbs] = useState<string>("");
   const [description, setDescription] = useState<string>("");
@@ -79,11 +99,13 @@ export function MainScreen() {
   const [selectedHistoryItem, setSelectedHistoryItem] = useState<HistoryItem | null>(null);
   const [viewingPhotos, setViewingPhotos] = useState<string[] | null>(null);
   const [deletingActivityId, setDeletingActivityId] = useState<string | number | null>(null);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   // Initialize theme from localStorage
   useEffect(() => {
@@ -95,6 +117,7 @@ export function MainScreen() {
     const newMode = !isDarkMode;
     setIsDarkMode(newMode);
     localStorage.setItem("rdo-theme", newMode ? "dark" : "light");
+    setIsMenuOpen(false);
   };
 
   const [userRole, setUserRole] = useState<string | null>(null);
@@ -111,11 +134,12 @@ export function MainScreen() {
       const supabase = createSupabaseBrowserClient();
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
+        const userEmail = (user.email || '').trim().toLowerCase();
         // 1. Sempre prioriza a Whitelist (authorized_users) - É a fonte da verdade
         const { data: authUser } = await supabase
           .from('authorized_users')
           .select('role')
-          .eq('email', user.email)
+          .ilike('email', userEmail)
           .maybeSingle();
 
         if (authUser) {
@@ -130,7 +154,7 @@ export function MainScreen() {
 
           if (profile?.role) {
             setUserRole(profile.role);
-          } else if (user.email === 'wladmir.carmo@estaleiromaua.ind.br' || user.email === 'alexander.araujo@estaleiromaua.ind.br') {
+          } else if (userEmail === 'wladmir.carmo@estaleiromaua.ind.br' || userEmail === 'alexander.araujo@estaleiromaua.ind.br') {
             setUserRole('owner');
           }
         }
@@ -143,6 +167,29 @@ export function MainScreen() {
   const isAdmin = userRole === 'admin' || userRole === 'owner';
   const canWrite = userRole === 'user' || userRole === 'admin' || userRole === 'owner' || userRole === 'assistente de planejamento' || userRole === 'auxiliar de planejamento';
 
+  useEffect(() => {
+    if (!isMenuOpen) return;
+
+    const handlePointerDown = (event: MouseEvent) => {
+      if (!menuRef.current?.contains(event.target as Node)) {
+        setIsMenuOpen(false);
+      }
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isMenuOpen]);
 
   // Load History
   const fetchHistory = useCallback(async (page: number = 1) => {
@@ -386,79 +433,139 @@ export function MainScreen() {
   return (
     <div className={`min-h-dvh transition-colors duration-300 ${isDarkMode ? "bg-zinc-950 text-zinc-50" : "bg-zinc-50 text-zinc-900"}`}>
       <div className="mx-auto flex w-full max-w-4xl flex-col gap-1 px-4 py-4">
-        <header className="flex items-start justify-between gap-4">
+        <header className="flex items-start justify-between gap-4 rounded-3xl bg-[#F18213] px-4 py-3 shadow-lg shadow-[#F18213]/20">
           <div>
             <div className="flex items-center gap-4">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/images/logo.png"
                 alt="Estaleiro Mauá"
-                className={`h-15 w-auto rounded-xl border object-contain shadow-lg ${isDarkMode ? "border-white/10 shadow-black/30" : "border-zinc-200 shadow-zinc-200/50"
-                  }`}
+                className="h-15 w-auto rounded-xl border border-white/40 bg-white object-contain shadow-lg shadow-[#8d4308]/20"
               />
               <div>
-                <h1 className={`text-4xl font-black tracking-tighter transition-colors ${isDarkMode ? "text-white" : "text-zinc-900"
-                  }`}>
+                <h1 className="text-4xl font-black tracking-tighter text-white transition-colors">
                   Mauá RDO
                 </h1>
               </div>
             </div>
           </div>
 
-          <div className="flex flex-col items-end gap-2">
-            <div className="flex gap-2">
-              {isAdmin && (
+          <div ref={menuRef} className="relative flex flex-col items-end gap-2">
+            <button
+              type="button"
+              onClick={() => setIsMenuOpen((open) => !open)}
+              aria-expanded={isMenuOpen}
+              aria-label={isMenuOpen ? "Fechar menu" : "Abrir menu"}
+              className={`flex h-12 w-12 items-center justify-center rounded-2xl border transition-all active:scale-95 ${isDarkMode
+                ? "bg-zinc-900 border-white/20 text-zinc-100 hover:bg-zinc-800"
+                : "bg-white border-white/50 text-zinc-900 hover:bg-zinc-100 shadow-sm"
+                }`}
+            >
+              {isMenuOpen ? <CloseIcon /> : <MenuIcon />}
+            </button>
+
+            {isMenuOpen && (
+              <div
+                className={`absolute right-0 top-14 z-40 w-64 overflow-hidden rounded-3xl border p-2 shadow-2xl animate-in fade-in zoom-in-95 slide-in-from-top-2 ${isDarkMode
+                  ? "border-zinc-800 bg-zinc-950 text-zinc-100 shadow-black/40"
+                  : "border-zinc-200 bg-white text-zinc-900 shadow-zinc-300/60"
+                  }`}
+              >
+                <div className={`px-4 pb-2 pt-3 text-[10px] font-black uppercase tracking-[0.24em] ${isDarkMode ? "text-zinc-500" : "text-zinc-400"}`}>
+                  Menu
+                </div>
+
+                {isAdmin && (
+                  <Link
+                    href="/admin"
+                    onClick={() => setIsMenuOpen(false)}
+                    className={`flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left transition-all active:scale-[0.98] ${isDarkMode
+                      ? "hover:bg-zinc-900 text-zinc-100"
+                      : "hover:bg-zinc-50 text-zinc-900"
+                      }`}
+                  >
+                    <span className={`flex h-10 w-10 items-center justify-center rounded-xl ${isDarkMode ? "bg-[#364B59]/20 text-[#364B59]" : "bg-[#364B59]/10 text-[#364B59]"}`}>
+                      <ShieldIcon />
+                    </span>
+                    <span className="flex flex-col">
+                      <span className="text-sm font-black">Dashboard</span>
+                      <span className={`text-[11px] font-bold ${isDarkMode ? "text-zinc-500" : "text-zinc-400"}`}>Painel administrativo</span>
+                    </span>
+                  </Link>
+                )}
+
                 <Link
-                  href="/admin"
-                  className={`p-2.5 rounded-xl border transition-all active:scale-95 ${isDarkMode
-                    ? "bg-zinc-900 border-zinc-700 text-zinc-100 hover:bg-zinc-800"
-                    : "bg-white border-zinc-200 text-[#000000] hover:bg-zinc-100 shadow-sm"
+                  href="/consulta"
+                  onClick={() => setIsMenuOpen(false)}
+                  className={`flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left transition-all active:scale-[0.98] ${isDarkMode
+                    ? "hover:bg-zinc-900 text-zinc-100"
+                    : "hover:bg-zinc-50 text-zinc-900"
                     }`}
-                  title="Painel Administrativo"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
+                  <span className={`flex h-10 w-10 items-center justify-center rounded-xl ${isDarkMode ? "bg-[#364B59]/20 text-[#364B59]" : "bg-[#364B59]/10 text-[#364B59]"}`}>
+                    <SearchPanelIcon />
+                  </span>
+                  <span className="flex flex-col">
+                    <span className="text-sm font-black">Consulta</span>
+                    <span className={`text-[11px] font-bold ${isDarkMode ? "text-zinc-500" : "text-zinc-400"}`}>Pesquisar RDOs</span>
+                  </span>
                 </Link>
-              )}
-              <button
-                onClick={async () => {
-                  const supabase = createSupabaseBrowserClient();
-                  const { data: { user } } = await supabase.auth.getUser();
 
-                  if (user) {
-                    try {
-                      await supabase.from('audit_logs').insert({
-                        user_id: user.id,
-                        user_email: user.email,
-                        action_type: 'LOGOUT',
-                        details: { method: 'manual_button' }
-                      });
-                    } catch (err) {
-                      console.error("Erro ao registrar log de logout:", err);
+                <button
+                  type="button"
+                  onClick={toggleTheme}
+                  className={`flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left transition-all active:scale-[0.98] ${isDarkMode
+                    ? "hover:bg-zinc-900 text-zinc-100"
+                    : "hover:bg-zinc-50 text-zinc-900"
+                    }`}
+                >
+                  <span className={`flex h-10 w-10 items-center justify-center rounded-xl ${isDarkMode ? "bg-[#F18213]/15 text-[#F18213]" : "bg-zinc-100 text-zinc-700"}`}>
+                    {isDarkMode ? <SunIcon /> : <MoonIcon />}
+                  </span>
+                  <span className="flex flex-col">
+                    <span className="text-sm font-black">{isDarkMode ? "Tema claro" : "Tema escuro"}</span>
+                    <span className={`text-[11px] font-bold ${isDarkMode ? "text-zinc-500" : "text-zinc-400"}`}>Alternar aparencia</span>
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={async () => {
+                    setIsMenuOpen(false);
+                    const supabase = createSupabaseBrowserClient();
+                    const { data: { user } } = await supabase.auth.getUser();
+
+                    if (user) {
+                      try {
+                        await supabase.from('audit_logs').insert({
+                          user_id: user.id,
+                          user_email: user.email,
+                          action_type: 'LOGOUT',
+                          details: { method: 'manual_button' }
+                        });
+                      } catch (err) {
+                        console.error("Erro ao registrar log de logout:", err);
+                      }
                     }
-                  }
 
-                  await supabase.auth.signOut();
-                  window.location.reload();
-                }}
-                className={`p-2.5 rounded-xl border transition-all active:scale-95 ${isDarkMode
-                  ? "bg-zinc-900 border-zinc-700 text-zinc-100 hover:bg-zinc-800"
-                  : "bg-white border-zinc-200 text-zinc-800 hover:bg-zinc-100 shadow-sm"
-                  }`}
-                title="Sair do sistema"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></svg>
-              </button>
-              <button
-                onClick={toggleTheme}
-                className={`p-2.5 rounded-xl border transition-all active:scale-95 ${isDarkMode
-                  ? "bg-zinc-900 border-zinc-700 text-zinc-100 hover:bg-zinc-800"
-                  : "bg-white border-zinc-200 text-zinc-800 hover:bg-zinc-100 shadow-sm"
-                  }`}
-                title={isDarkMode ? "Mudar para modo claro" : "Mudar para modo escuro"}
-              >
-                {isDarkMode ? <SunIcon /> : <MoonIcon />}
-              </button>
-            </div>
+                    await supabase.auth.signOut();
+                    window.location.reload();
+                  }}
+                  className={`flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left transition-all active:scale-[0.98] ${isDarkMode
+                    ? "hover:bg-rose-500/10 text-rose-400"
+                    : "hover:bg-rose-50 text-rose-600"
+                    }`}
+                >
+                  <span className={`flex h-10 w-10 items-center justify-center rounded-xl ${isDarkMode ? "bg-rose-500/15" : "bg-rose-50"}`}>
+                    <LogoutIcon />
+                  </span>
+                  <span className="flex flex-col">
+                    <span className="text-sm font-black">Logout</span>
+                    <span className={`text-[11px] font-bold ${isDarkMode ? "text-rose-400/70" : "text-rose-400"}`}>Sair do sistema</span>
+                  </span>
+                </button>
+              </div>
+            )}
           </div>
         </header>
 
@@ -482,12 +589,12 @@ export function MainScreen() {
         <section className={`grid grid-cols-2 gap-4 rounded-3xl border p-4 transition-colors ${isDarkMode ? "border-zinc-800 bg-zinc-950/60" : "border-zinc-200 bg-white shadow-lg shadow-zinc-200/20"}`}>
           <div className="flex flex-col gap-1">
             <div className="flex items-center min-h-[32px]">
-              <label className={`text-xs font-black uppercase tracking-widest ${isDarkMode ? "text-zinc-400" : "text-[#2868A0]"}`}>CC (Centro de Custo)</label>
+              <label className={`text-xs font-black uppercase tracking-widest ${isDarkMode ? "text-zinc-400" : "text-[#364B59]"}`}>CC (Centro de Custo)</label>
             </div>
             <select
               value={cc}
               onChange={(e) => setCc(e.target.value)}
-              className={`w-full rounded-2xl border px-5 py-4 text-xl font-bold outline-none focus:border-[#2868A0] transition-all focus:ring-4 focus:ring-[#2868A0]/10 ${isDarkMode
+              className={`w-full rounded-2xl border px-5 py-4 text-xl font-bold outline-none focus:border-[#364B59] transition-all focus:ring-4 focus:ring-[#364B59]/10 ${isDarkMode
                 ? "border-zinc-700 bg-zinc-950 text-zinc-100"
                 : "border-zinc-200 bg-zinc-50 text-zinc-900"
                 }`}
@@ -505,7 +612,7 @@ export function MainScreen() {
           </div>
           <div className="flex flex-col gap-1">
             <div className="flex items-center justify-between min-h-[32px]">
-              <label className={`text-xs font-black uppercase tracking-widest ${isDarkMode ? "text-zinc-400" : "text-[#2868A0]"}`}>DATA</label>
+              <label className={`text-xs font-black uppercase tracking-widest ${isDarkMode ? "text-zinc-400" : "text-[#364B59]"}`}>DATA</label>
               <div className="flex gap-2">
                 {[
                   { id: 'active', label: 'Vigentes' },
@@ -516,7 +623,7 @@ export function MainScreen() {
                     key={type.id}
                     onClick={() => setDateFilterType(type.id as 'active' | 'start' | 'end')}
                     className={`px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-lg border transition-all ${dateFilterType === type.id
-                      ? "bg-[#2868A0] border-[#2868A0] text-white shadow-lg shadow-[#2868A0]/20"
+                      ? "bg-[#364B59] border-[#364B59] text-white shadow-lg shadow-[#364B59]/20"
                       : isDarkMode ? "bg-zinc-900 border-zinc-700 text-zinc-400 hover:bg-zinc-800" : "bg-zinc-100 border-zinc-200 text-zinc-500 hover:bg-zinc-200"
                       }`}
                   >
@@ -529,7 +636,7 @@ export function MainScreen() {
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              className={`w-full rounded-2xl border px-5 py-4 text-xl font-bold outline-none focus:border-[#2868A0] transition-all focus:ring-4 focus:ring-[#2868A0]/10 ${isDarkMode
+              className={`w-full rounded-2xl border px-5 py-4 text-xl font-bold outline-none focus:border-[#364B59] transition-all focus:ring-4 focus:ring-[#364B59]/10 ${isDarkMode
                 ? "border-zinc-700 bg-zinc-950 text-zinc-100"
                 : "border-zinc-200 bg-zinc-50 text-zinc-900"
                 }`}
@@ -538,7 +645,7 @@ export function MainScreen() {
         </section>
 
         <section className={`rounded-3xl border p-4 transition-colors ${isDarkMode ? "border-zinc-800 bg-zinc-950/60" : "border-zinc-200 bg-white shadow-lg shadow-zinc-200/20"}`}>
-          <label className={`text-xs font-black uppercase tracking-widest ${isDarkMode ? "text-zinc-400" : "text-[#2868A0]"}`}>ATIVIDADE</label>
+          <label className={`text-xs font-black uppercase tracking-widest ${isDarkMode ? "text-zinc-400" : "text-[#364B59]"}`}>ATIVIDADE</label>
           <select
             value={selectedTaskId}
             onChange={(e) => {
@@ -551,7 +658,7 @@ export function MainScreen() {
               }
             }}
             disabled={wbsLoading || wbsList.length === 0}
-            className={`mt-1 w-full rounded-2xl border px-5 py-3 text-xl font-bold outline-none focus:border-[#2868A0] disabled:cursor-not-allowed disabled:opacity-60 transition-all focus:ring-4 focus:ring-[#2868A0]/10 ${isDarkMode
+            className={`mt-1 w-full rounded-2xl border px-5 py-3 text-xl font-bold outline-none focus:border-[#364B59] disabled:cursor-not-allowed disabled:opacity-60 transition-all focus:ring-4 focus:ring-[#364B59]/10 ${isDarkMode
               ? "border-zinc-700 bg-zinc-950 text-zinc-100"
               : "border-zinc-200 bg-zinc-50 text-zinc-900"
               }`}
@@ -577,7 +684,7 @@ export function MainScreen() {
         </section>
 
         <section className={`rounded-3xl border p-4 transition-colors ${isDarkMode ? "border-zinc-800 bg-zinc-950/60" : "border-zinc-200 bg-white shadow-lg shadow-zinc-200/20"}`}>
-          <label className={`text-xs font-black uppercase tracking-widest ${isDarkMode ? "text-zinc-400" : "text-[#2868A0]"}`}>OS (Ordem de Serviço)</label>
+          <label className={`text-xs font-black uppercase tracking-widest ${isDarkMode ? "text-zinc-400" : "text-[#364B59]"}`}>OS (Ordem de Serviço)</label>
           <div className={`mt-1 rounded-2xl border px-5 py-3 text-xl font-bold ${isDarkMode ? "border-zinc-800 bg-zinc-950 text-zinc-400" : "border-zinc-200 bg-zinc-100 text-zinc-500"}`}>
             {os || "VINCULADO AUTOMATICAMENTE À TAREFA"}
           </div>
@@ -587,12 +694,12 @@ export function MainScreen() {
         </section>
 
         <section className={`rounded-3xl border p-4 transition-colors ${isDarkMode ? "border-zinc-800 bg-zinc-950/60" : "border-zinc-200 bg-white shadow-lg shadow-zinc-200/20"}`}>
-          <label className={`text-xs font-black uppercase tracking-widest ${isDarkMode ? "text-zinc-400" : "text-[#2868A0]"}`}>DESCRIÇÃO</label>
+          <label className={`text-xs font-black uppercase tracking-widest ${isDarkMode ? "text-zinc-400" : "text-[#364B59]"}`}>DESCRIÇÃO</label>
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Opcional: Descreva o que está na foto..."
-            className={`mt-1 w-full rounded-2xl border px-5 py-3 text-xl font-medium outline-none focus:border-[#2868A0] transition-all focus:ring-4 focus:ring-[#2868A0]/10 min-h-[80px] ${isDarkMode
+            className={`mt-1 w-full rounded-2xl border px-5 py-3 text-xl font-medium outline-none focus:border-[#364B59] transition-all focus:ring-4 focus:ring-[#364B59]/10 min-h-[80px] ${isDarkMode
               ? "border-zinc-700 bg-zinc-950 text-zinc-100 placeholder:text-zinc-700"
               : "border-zinc-200 bg-zinc-50 text-zinc-900 placeholder:text-zinc-300"
               }`}
@@ -601,7 +708,7 @@ export function MainScreen() {
 
         {/* Aviso de Atividade já lançada */}
         {history.find(h => h.cc === cc && h.data === date)?.rdo_atividades.some(a => normalizeWbs(a.wbs) === normalizeWbs(wbs)) && (
-          <div className={`mt-3 flex items-center gap-2 rounded-lg border px-3 py-2 animate-in fade-in slide-in-from-top-1 ${isDarkMode ? "bg-amber-500/10 border-amber-500/20 text-amber-500" : "bg-amber-50 border-amber-200 text-amber-600"
+          <div className={`mt-3 flex items-center gap-2 rounded-lg border px-3 py-2 animate-in fade-in slide-in-from-top-1 ${isDarkMode ? "bg-[#F18213]/10 border-[#F18213]/20 text-[#F18213]" : "bg-[#F18213]/10 border-[#F18213]/30 text-[#F18213]"
             }`}>
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
             <span className="text-[10px] font-bold uppercase tracking-tight">Esta atividade já possui registros para hoje. Novas fotos serão adicionadas.</span>
@@ -611,11 +718,11 @@ export function MainScreen() {
         <section className={`rounded-3xl border p-4 transition-colors ${isDarkMode ? "border-zinc-800 bg-zinc-950/60" : "border-zinc-200 bg-white shadow-lg shadow-zinc-200/20"}`}>
           <div className="flex flex-col gap-8">
             <div className="flex items-center justify-between">
-              <p className={`text-xl font-black uppercase tracking-tight ${isDarkMode ? "text-white" : "text-[#2868A0]"}`}>Imagens</p>
+              <p className={`text-xl font-black uppercase tracking-tight ${isDarkMode ? "text-white" : "text-[#364B59]"}`}>Imagens</p>
               {(() => {
                 const alreadyUploaded = history.find(h => h.cc === cc && h.data === date)?.rdo_atividades.find(a => normalizeWbs(a.wbs) === normalizeWbs(wbs))?.fotos || 0;
                 return (
-                  <span className={`text-base font-black px-5 py-2 rounded-xl border ${isDarkMode ? "bg-[#2868A0]/10 border-[#2868A0]/30 text-[#2868A0]" : "bg-[#2868A0]/5 border-[#2868A0]/20 text-[#2868A0]"
+                  <span className={`text-base font-black px-5 py-2 rounded-xl border ${isDarkMode ? "bg-[#364B59]/10 border-[#364B59]/30 text-[#364B59]" : "bg-[#364B59]/5 border-[#364B59]/20 text-[#364B59]"
                     }`}>
                     {alreadyUploaded}/4 ENVIADAS
                   </span>
@@ -707,7 +814,7 @@ export function MainScreen() {
               <div
                 {...getRootProps()}
                 className={`rounded-[2rem] border-2 border-dashed p-10 transition-all duration-300 ${isDragActive
-                  ? "border-[#2868A0] bg-[#2868A0]/10 scale-[1.02]"
+                  ? "border-[#364B59] bg-[#364B59]/10 scale-[1.02]"
                   : isDarkMode ? "border-zinc-800 bg-zinc-900/20" : "border-zinc-200 bg-zinc-50"
                   }`}
               >
@@ -715,7 +822,7 @@ export function MainScreen() {
                 <div className="flex flex-col items-center gap-6 py-4">
                   <div className="text-center">
                     {isDragActive && (
-                      <span className="text-[#2868A0] font-black text-2xl uppercase tracking-widest">Solte as imagens aqui</span>
+                      <span className="text-[#364B59] font-black text-2xl uppercase tracking-widest">Solte as imagens aqui</span>
                     )}
                   </div>
                   <div className={`rounded-2xl px-8 py-14 text-center text-sm font-bold uppercase tracking-widest transition-colors ${isDarkMode ? "bg-zinc-900/40 text-zinc-700" : "bg-zinc-200/50 text-zinc-400"}`}>
@@ -729,7 +836,7 @@ export function MainScreen() {
               const remaining = 4 - alreadyUploaded;
               if (remaining > 0 && files.length > 0) {
                 return (
-                  <p className="text-center text-sm font-black uppercase tracking-widest text-[#2868A0]">
+                  <p className="text-center text-sm font-black uppercase tracking-widest text-[#364B59]">
                     {files.length} de {remaining} {remaining === 1 ? "vaga disponível" : "vagas disponíveis"} selecionada(s)
                   </p>
                 );
@@ -744,13 +851,13 @@ export function MainScreen() {
             <button
               onClick={submit}
               disabled={status.kind === "loading"}
-              className="rounded-[1.5rem] bg-[#2868A0] py-6 text-2xl font-black text-white shadow-2xl shadow-[#2868A0]/40 transition-all hover:bg-[#1f5f8c] active:scale-[0.98] disabled:opacity-60"
+              className="rounded-[1.5rem] bg-[#F18213] py-6 text-2xl font-black text-white shadow-2xl shadow-[#364B59]/40 transition-all hover:bg-[#2C3D47] active:scale-[0.98] disabled:opacity-60"
             >
               {status.kind === "loading"
                 ? status.message
                 : history.find(h => h.cc === cc && h.data === date)?.rdo_atividades.some(a => normalizeWbs(a.wbs) === normalizeWbs(wbs))
                   ? "Atualizar RDO"
-                  : "Enviar RDO"
+                  : "Enviar para RDO"
               }
             </button>
 
@@ -767,101 +874,7 @@ export function MainScreen() {
           </section>
         )}
 
-        <section className={`rounded-3xl border p-4 transition-colors ${isDarkMode ? "border-zinc-800 bg-zinc-950/60" : "border-zinc-200 bg-white shadow-sm"}`}>
-          <div className="flex items-center justify-between mb-6">
-            <h2 className={`text-2xl font-black uppercase tracking-tight ${isDarkMode ? "text-white" : "text-zinc-900"}`}>
-              Lançamentos Recentes
-            </h2>
-            <button
-              onClick={() => fetchHistory(1)}
-              disabled={historyLoading}
-              className={`text-xs uppercase font-black tracking-widest hover:underline disabled:opacity-50 px-4 py-2 rounded-xl border ${isDarkMode ? "text-zinc-400 border-zinc-800 bg-zinc-900" : "text-zinc-500 border-zinc-200 bg-zinc-50"
-                }`}
-            >
-              {historyLoading ? "Atualizando..." : "Atualizar Lista"}
-            </button>
-          </div>
 
-          <div className="flex flex-col gap-3">
-            {history.length === 0 && !historyLoading ? (
-              <p className={`text-xs text-center py-4 ${isDarkMode ? "text-zinc-500" : "text-zinc-400"}`}>
-                Nenhum lançamento encontrado
-              </p>
-            ) : (
-              history.map((item) => (
-                <div
-                  key={item.id}
-                  onClick={() => setSelectedHistoryItem(item)}
-                  className={`flex flex-col gap-3 rounded-3xl border p-4 transition-all cursor-pointer hover:scale-[1.01] active:scale-95 ${isDarkMode
-                    ? "bg-zinc-900/40 border-zinc-800 hover:bg-zinc-900/60 hover:border-zinc-700"
-                    : "bg-zinc-50 border-zinc-100 shadow-sm hover:bg-white hover:border-zinc-200 hover:shadow-md"
-                    }`}
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex flex-col gap-2">
-                      <div className="flex items-center gap-3">
-                        <span className={`text-xs font-black uppercase tracking-widest ${isDarkMode ? "text-[#2868A0]" : "text-[#2868A0]"}`}>
-                          CC {item.cc}
-                        </span>
-                        <span className={`text-xs font-bold ${isDarkMode ? "text-zinc-500" : "text-zinc-400"}`}>
-                          • {item.data ? new Date(item.data + 'T12:00:00').toLocaleDateString('pt-BR') : '---'}
-                        </span>
-                      </div>
-                      <h3 className={`text-lg font-black tracking-tight ${isDarkMode ? "text-zinc-100" : "text-zinc-900"}`}>
-                        OS {item.os}
-                      </h3>
-                    </div>
-                    <div className={`flex items-center gap-2 rounded-xl px-4 py-2 border ${isDarkMode ? "bg-zinc-950 border-zinc-800 text-[#2868A0]" : "bg-white border-zinc-100 text-[#2868A0]"
-                      }`}>
-                      <span className="text-sm font-black">{item.totalFotos}</span>
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {item.rdo_atividades?.map((atv, i) => (
-                      <span key={i} className={`inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 text-[11px] font-black uppercase tracking-tighter ${isDarkMode ? "bg-zinc-800/50 border-zinc-700 text-zinc-400" : "bg-zinc-100 border-zinc-200 text-zinc-500"
-                        }`}>
-                        {atv.wbs}
-                        {atv.editado && <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]" />}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-
-          {totalPages > 1 && (
-            <div className="mt-6 flex items-center justify-between border-t border-zinc-800 pt-4 px-1">
-              <button
-                onClick={() => fetchHistory(currentPage - 1)}
-                disabled={currentPage === 1 || historyLoading}
-                className={`text-xs font-bold uppercase tracking-widest px-3 py-2 rounded-lg border transition-all disabled:opacity-30 ${isDarkMode
-                  ? "bg-zinc-900 border-zinc-800 text-zinc-400 hover:bg-zinc-800"
-                  : "bg-zinc-50 border-zinc-200 text-zinc-600 hover:bg-zinc-100"
-                  }`}
-              >
-                Anterior
-              </button>
-
-              <span className={`text-[10px] font-bold uppercase tracking-widest ${isDarkMode ? "text-zinc-500" : "text-zinc-400"}`}>
-                Página {currentPage} de {totalPages}
-              </span>
-
-              <button
-                onClick={() => fetchHistory(currentPage + 1)}
-                disabled={currentPage === totalPages || historyLoading}
-                className={`text-xs font-bold uppercase tracking-widest px-3 py-2 rounded-lg border transition-all disabled:opacity-30 ${isDarkMode
-                  ? "bg-zinc-900 border-zinc-800 text-zinc-400 hover:bg-zinc-800"
-                  : "bg-zinc-50 border-zinc-200 text-zinc-600 hover:bg-zinc-100"
-                  }`}
-              >
-                Próxima
-              </button>
-            </div>
-          )}
-        </section>
 
         <footer className="pt-2 text-center text-xs text-zinc-500">
           Dica: mantenha a imagem abaixo de 10MB (compressão automática).
@@ -898,22 +911,22 @@ export function MainScreen() {
             <div className="max-h-[85vh] overflow-y-auto p-12">
               <div className="grid grid-cols-2 gap-10 mb-12">
                 <div className="flex flex-col gap-2">
-                  <span className="text-xs font-black uppercase tracking-widest text-[#2868A0]">Ordem de Serviço</span>
+                  <span className="text-xs font-black uppercase tracking-widest text-[#364B59]">Ordem de Serviço</span>
                   <span className={`text-2xl font-bold ${isDarkMode ? "text-white" : "text-zinc-900"}`}>OS {selectedHistoryItem.os}</span>
                 </div>
                 <div className="flex flex-col gap-2">
-                  <span className="text-xs font-black uppercase tracking-widest text-[#2868A0]">Data do RDO</span>
+                  <span className="text-xs font-black uppercase tracking-widest text-[#364B59]">Data do RDO</span>
                   <span className={`text-2xl font-bold ${isDarkMode ? "text-white" : "text-zinc-900"}`}>
                     {selectedHistoryItem.data ? new Date(selectedHistoryItem.data + 'T12:00:00').toLocaleDateString('pt-BR') : '---'}
                   </span>
                 </div>
                 <div className="flex flex-col gap-2">
-                  <span className="text-xs font-black uppercase tracking-widest text-[#2868A0]">Centro de Custo</span>
+                  <span className="text-xs font-black uppercase tracking-widest text-[#364B59]">Centro de Custo</span>
                   <span className={`text-2xl font-bold ${isDarkMode ? "text-white" : "text-zinc-900"}`}>CC {selectedHistoryItem.cc}</span>
                 </div>
                 <div className="flex flex-col gap-2">
-                  <span className="text-xs font-black uppercase tracking-widest text-[#2868A0]">Total de Fotos</span>
-                  <span className={`inline-flex w-fit rounded-xl px-4 py-1.5 text-xs font-black ${isDarkMode ? "bg-[#2868A0]/20 text-[#2868A0] border border-[#2868A0]/30" : "bg-[#2868A0]/10 text-[#2868A0] border border-[#2868A0]/20"
+                  <span className="text-xs font-black uppercase tracking-widest text-[#364B59]">Total de Fotos</span>
+                  <span className={`inline-flex w-fit rounded-xl px-4 py-1.5 text-xs font-black ${isDarkMode ? "bg-[#364B59]/20 text-[#364B59] border border-[#364B59]/30" : "bg-[#364B59]/10 text-[#364B59] border border-[#364B59]/20"
                     }`}>
                     {selectedHistoryItem.totalFotos} FOTOS ENVIADAS
                   </span>
@@ -931,9 +944,9 @@ export function MainScreen() {
                     >
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex flex-col gap-2">
-                          <span className={`text-xl font-black ${isDarkMode ? "text-[#2868A0]" : "text-[#2868A0]"}`}>{atv.wbs}</span>
+                          <span className={`text-xl font-black ${isDarkMode ? "text-[#364B59]" : "text-[#364B59]"}`}>{atv.wbs}</span>
                           {atv.editado && (
-                            <span className="w-fit rounded-md bg-amber-500/20 px-2 py-0.5 text-[10px] font-black uppercase tracking-tighter text-amber-500 border border-amber-500/30">
+                            <span className="w-fit rounded-md bg-[#F18213]/20 px-2 py-0.5 text-[10px] font-black uppercase tracking-tighter text-[#F18213] border border-[#F18213]/30">
                               Editado
                             </span>
                           )}
@@ -971,7 +984,7 @@ export function MainScreen() {
                       {atv.urls && atv.urls.length > 0 && (
                         <button
                           onClick={() => setViewingPhotos(atv.urls || null)}
-                          className="w-fit text-[11px] font-black uppercase tracking-widest text-[#2868A0] hover:underline flex items-center gap-2 mt-2"
+                          className="w-fit text-[11px] font-black uppercase tracking-widest text-[#364B59] hover:underline flex items-center gap-2 mt-2"
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
                           Ver fotos desta atividade
@@ -987,7 +1000,7 @@ export function MainScreen() {
             <div className={`border-t p-10 ${isDarkMode ? "border-zinc-800 bg-zinc-900/50" : "border-zinc-100 bg-zinc-50/50"}`}>
               <button
                 onClick={() => setSelectedHistoryItem(null)}
-                className="w-full rounded-[1.5rem] bg-[#2868A0] py-6 text-xl font-black text-white shadow-lg shadow-[#2868A0]/30 transition-all hover:bg-[#1f5f8c] active:scale-95"
+                className="w-full rounded-[1.5rem] bg-[#364B59] py-6 text-xl font-black text-white shadow-lg shadow-[#364B59]/30 transition-all hover:bg-[#2C3D47] active:scale-95"
               >
                 Fechar Detalhes
               </button>

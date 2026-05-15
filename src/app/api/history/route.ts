@@ -5,12 +5,16 @@ export async function GET(request: Request) {
   const admin = createSupabaseAdminClient();
   const { searchParams } = new URL(request.url);
   const page = parseInt(searchParams.get("page") || "1");
-  const limit = 10;
+  const requestedLimit = parseInt(searchParams.get("limit") || "10");
+  const limit = Math.min(Math.max(requestedLimit, 1), 100);
   const from = (page - 1) * limit;
   const to = from + limit - 1;
+  const cc = searchParams.get("cc");
+  const date = searchParams.get("date");
+  const os = searchParams.get("os");
 
   try {
-    const { data, error, count } = await admin
+    let query = admin
       .from("rdo_atividades")
       .select(`
         id_atividade,
@@ -30,8 +34,21 @@ export async function GET(request: Request) {
           imagem_url
         )
       `, { count: "exact" })
-      .order("created_at", { ascending: false })
-      .range(from, to);
+      .order("created_at", { ascending: false });
+
+    if (cc) {
+      query = query.eq("rdo_os.rdo.cc", cc);
+    }
+
+    if (date) {
+      query = query.eq("rdo_os.rdo.data_rdo", date);
+    }
+
+    if (os) {
+      query = query.ilike("rdo_os.os", `%${os}%`);
+    }
+
+    const { data, error, count } = await query.range(from, to);
 
     if (error) {
       console.error("Supabase error:", error);

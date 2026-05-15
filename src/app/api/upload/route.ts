@@ -58,6 +58,13 @@ export async function POST(request: Request) {
     }
 
     const admin = createSupabaseAdminClient();
+    const userEmail = (user.email || "").trim().toLowerCase();
+
+    const { data: authUser } = await admin
+      .from('authorized_users')
+      .select('role')
+      .ilike('email', userEmail)
+      .maybeSingle();
     
     // Verificar se usuário tem permissão de escrita
     const { data: profile } = await admin
@@ -66,8 +73,21 @@ export async function POST(request: Request) {
       .eq('id', user.id)
       .maybeSingle();
 
-    if (profile?.role === 'consulta') {
-      return NextResponse.json({ error: "Seu perfil permite apenas consulta (leitura)" }, { status: 403 });
+    const owners = new Set([
+      'wladmir.carmo@estaleiromaua.ind.br',
+      'alexander.araujo@estaleiromaua.ind.br',
+    ]);
+    const userRole = authUser?.role || profile?.role || (owners.has(userEmail) ? 'owner' : null);
+    const allowedWriteRoles = new Set([
+      'user',
+      'admin',
+      'owner',
+      'assistente de planejamento',
+      'auxiliar de planejamento',
+    ]);
+
+    if (!userRole || !allowedWriteRoles.has(userRole)) {
+      return NextResponse.json({ error: "Seu perfil nÃ£o permite envio de RDO" }, { status: 403 });
     }
 
     // New RDO logic

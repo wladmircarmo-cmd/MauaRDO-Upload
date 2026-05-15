@@ -9,6 +9,7 @@ export async function middleware(request: NextRequest) {
 
   const isLoginPage = request.nextUrl.pathname === '/login'
   const isAuthPage = request.nextUrl.pathname.startsWith('/auth')
+  const isConsultaPage = request.nextUrl.pathname.startsWith('/consulta')
 
   if (!user && !isLoginPage && !isAuthPage) {
     const url = request.nextUrl.clone()
@@ -20,7 +21,8 @@ export async function middleware(request: NextRequest) {
 
   // Verificação de Autorização (Whitelist e Domínio)
   if (user && !isAuthPage) {
-    const isMauaEmail = user.email?.endsWith('@estaleiromaua.ind.br');
+    const userEmail = (user.email || '').trim().toLowerCase();
+    const isMauaEmail = userEmail.endsWith('@estaleiromaua.ind.br');
     
     // Verificação de Autorização (Sempre checa a Whitelist em tempo real usando ADMIN)
     const admin = createSupabaseAdminClient();
@@ -30,7 +32,7 @@ export async function middleware(request: NextRequest) {
     const { data: authUser } = await admin
       .from('authorized_users')
       .select('role')
-      .eq('email', user.email)
+      .ilike('email', userEmail)
       .maybeSingle();
     
     if (authUser) {
@@ -41,7 +43,7 @@ export async function middleware(request: NextRequest) {
         'wladmir.carmo@estaleiromaua.ind.br',
         'alexander.araujo@estaleiromaua.ind.br'
       ];
-      if (owners.includes(user.email || '')) {
+      if (owners.includes(userEmail)) {
         userRole = 'owner';
       }
     }
@@ -49,7 +51,7 @@ export async function middleware(request: NextRequest) {
     const isGuest = !userRole || userRole === 'guest';
 
     console.log('--- DEBUG MIDDLEWARE ---');
-    console.log('Email:', user.email);
+    console.log('Email:', userEmail);
     console.log('isMauaEmail:', isMauaEmail);
     console.log('userRole:', userRole);
     console.log('isGuest:', isGuest);
@@ -64,9 +66,15 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(url)
     }
 
+    if (userRole === 'consulta' && !isLoginPage && !isConsultaPage) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/consulta'
+      return NextResponse.redirect(url)
+    }
+
     // Proteção da Rota Admin
     const isAdminPage = request.nextUrl.pathname.startsWith('/admin')
-    const isOwner = user.email === 'wladmir.carmo@estaleiromaua.ind.br';
+    const isOwner = userEmail === 'wladmir.carmo@estaleiromaua.ind.br';
     
     if (isAdminPage && !isOwner && userRole !== 'admin' && userRole !== 'owner') {
       console.log('BLOCKING ADMIN ACCESS: NOT AUTHORIZED');
@@ -76,9 +84,9 @@ export async function middleware(request: NextRequest) {
     }
 
     // Se já estiver logado e autorizado, não deixa voltar para a tela de login
-    if (!isGuest && isMauaEmail && isLoginPage) {
+    if (!isGuest && isLoginPage) {
       const url = request.nextUrl.clone()
-      url.pathname = '/'
+      url.pathname = userRole === 'consulta' ? '/consulta' : '/'
       return NextResponse.redirect(url)
     }
   }

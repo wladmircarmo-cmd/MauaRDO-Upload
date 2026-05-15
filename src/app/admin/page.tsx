@@ -90,11 +90,12 @@ export default function AdminDashboard() {
 
   const handleAddUser = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newEmail) return;
+    const email = newEmail.trim().toLowerCase();
+    if (!email) return;
 
     const { error } = await supabase
       .from('authorized_users')
-      .insert({ email: newEmail, role: newRole });
+      .insert({ email, role: newRole });
 
     if (error) {
       alert("Erro ao adicionar usuário: " + error.message);
@@ -126,14 +127,14 @@ export default function AdminDashboard() {
             <div className="flex bg-zinc-900/50 p-1 rounded-2xl border border-zinc-800">
               <button 
                 onClick={() => setActiveTab('logs')}
-                className={`px-6 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'logs' ? "bg-[#2868A0] text-white shadow-lg" : "text-zinc-500 hover:text-zinc-300"}`}
+                className={`px-6 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'logs' ? "bg-[#364B59] text-white shadow-lg" : "text-zinc-500 hover:text-zinc-300"}`}
               >
                 Logs de Atividade
               </button>
               {userRole === 'owner' && (
                 <button 
                   onClick={() => setActiveTab('users')}
-                  className={`px-6 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'users' ? "bg-[#2868A0] text-white shadow-lg" : "text-zinc-500 hover:text-zinc-300"}`}
+                  className={`px-6 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'users' ? "bg-[#364B59] text-white shadow-lg" : "text-zinc-500 hover:text-zinc-300"}`}
                 >
                   Gestão de Usuários
                 </button>
@@ -188,7 +189,7 @@ export default function AdminDashboard() {
                         <span className={`px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase border ${
                           log.action_type === 'LOGIN' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' :
                           log.action_type === 'LOGOUT' ? 'bg-zinc-500/10 text-zinc-500 border-zinc-500/20' :
-                          log.action_type === 'RDO_EDIT' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' :
+                          log.action_type === 'RDO_EDIT' ? 'bg-[#F18213]/10 text-[#F18213] border-[#F18213]/20' :
                           log.action_type === 'RDO_DELETE' ? 'bg-rose-500/10 text-rose-500 border-rose-500/20' :
                           log.action_type === 'RDO_UPLOAD' ? 'bg-sky-500/10 text-sky-500 border-sky-500/20' :
                           'bg-zinc-500/10 text-zinc-500 border-zinc-500/20'
@@ -252,7 +253,7 @@ export default function AdminDashboard() {
             {/* Form de Adição */}
             <form onSubmit={handleAddUser} className={`p-10 rounded-[2.5rem] border ${isDarkMode ? "bg-zinc-900 border-zinc-800" : "bg-white border-zinc-200 shadow-2xl"}`}>
               <h3 className="text-xl font-bold mb-6 flex items-center gap-3">
-                <div className="h-2 w-2 rounded-full bg-[#2868A0] animate-pulse" />
+                <div className="h-2 w-2 rounded-full bg-[#364B59] animate-pulse" />
                 Autorizar Novo E-mail
               </h3>
               <div className="flex gap-4">
@@ -261,7 +262,7 @@ export default function AdminDashboard() {
                   value={newEmail}
                   onChange={(e) => setNewEmail(e.target.value)}
                   placeholder="exemplo@estaleiromaua.ind.br"
-                  className={`flex-1 rounded-2xl border px-6 py-4 text-lg font-bold outline-none focus:ring-4 focus:ring-[#2868A0]/10 transition-all ${isDarkMode ? "bg-zinc-950 border-zinc-700 text-white" : "bg-zinc-50 border-zinc-200 text-zinc-900"}`}
+                  className={`flex-1 rounded-2xl border px-6 py-4 text-lg font-bold outline-none focus:ring-4 focus:ring-[#364B59]/10 transition-all ${isDarkMode ? "bg-zinc-950 border-zinc-700 text-white" : "bg-zinc-50 border-zinc-200 text-zinc-900"}`}
                 />
                 <select 
                   value={newRole}
@@ -274,7 +275,7 @@ export default function AdminDashboard() {
                   <option value="consulta">Consulta (Leitura)</option>
                   <option value="admin">Administrador</option>
                 </select>
-                <button type="submit" className="bg-[#2868A0] text-white px-8 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-[#1f5f8c] transition-all active:scale-95 shadow-lg shadow-[#2868A0]/30">
+                <button type="submit" className="bg-[#364B59] text-white px-8 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-[#2C3D47] transition-all active:scale-95 shadow-lg shadow-[#364B59]/30">
                   Autorizar
                 </button>
               </div>
@@ -287,12 +288,12 @@ export default function AdminDashboard() {
                 {users.map((user) => (
                   <div key={user.id} className={`flex items-center justify-between p-6 rounded-3xl border transition-all ${isDarkMode ? "bg-zinc-900/40 border-zinc-800 hover:border-zinc-700" : "bg-white border-zinc-200 hover:shadow-md"}`}>
                     <div className="flex items-center gap-6">
-                      <div className={`h-12 w-12 rounded-2xl flex items-center justify-center font-black text-xl ${user.role === 'admin' || user.role === 'owner' ? "bg-[#2868A0] text-white" : "bg-zinc-800 text-zinc-500"}`}>
+                      <div className={`h-12 w-12 rounded-2xl flex items-center justify-center font-black text-xl ${user.role === 'admin' || user.role === 'owner' ? "bg-[#364B59] text-white" : "bg-zinc-800 text-zinc-500"}`}>
                         {user.email[0].toUpperCase()}
                       </div>
                       <div>
                         <div className="font-bold text-lg">{user.email}</div>
-                        <div className={`text-[10px] font-black uppercase tracking-widest ${user.role === 'admin' || user.role === 'owner' ? "text-[#2868A0]" : "text-zinc-500"}`}>
+                        <div className={`text-[10px] font-black uppercase tracking-widest ${user.role === 'admin' || user.role === 'owner' ? "text-[#364B59]" : "text-zinc-500"}`}>
                           {user.role}
                         </div>
                       </div>

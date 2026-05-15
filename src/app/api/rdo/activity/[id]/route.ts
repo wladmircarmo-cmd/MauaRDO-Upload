@@ -55,16 +55,17 @@ export async function DELETE(
     }
 
     const admin = createSupabaseAdminClient();
+    const userEmail = (user.email || "").trim().toLowerCase();
 
     const { data: authorizedUser } = await admin
       .from("authorized_users")
       .select("role")
-      .eq("email", user.email)
+      .ilike("email", userEmail)
       .maybeSingle();
 
     let role = authorizedUser?.role ?? null;
 
-    if (!role && OWNER_EMAILS.has(user.email || "")) {
+    if (!role && OWNER_EMAILS.has(userEmail)) {
       role = "owner";
     }
 
