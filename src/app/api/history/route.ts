@@ -43,10 +43,11 @@ export async function GET(request: Request) {
       data: string;
       cc: string;
       os: string;
-      atividades: { wbs: string; descricao: string; fotos: number; urls: string[]; editado: boolean }[];
+      atividades: { id_atividade: number | string; wbs: string; descricao: string; fotos: number; urls: string[]; editado: boolean }[];
       totalFotos: number;
     }
     interface RawHistoryItem {
+      id_atividade: number | string;
       tarefa: string;
       comentario: string | null;
       created_at: string;
@@ -114,6 +115,7 @@ export async function GET(request: Request) {
         if (isEditado) existingAtiv.editado = true;
       } else {
         group.atividades.push({
+          id_atividade: item.id_atividade,
           wbs: item.tarefa,
           descricao: item.comentario || "",
           fotos: fotoCount,

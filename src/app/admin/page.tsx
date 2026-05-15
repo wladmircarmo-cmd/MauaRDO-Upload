@@ -27,7 +27,7 @@ export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<'logs' | 'users'>('logs');
   const [newEmail, setNewEmail] = useState("");
   const [newRole, setNewRole] = useState("user");
-  const [isDarkMode, setIsDarkMode] = useState(true);
+  const [isDarkMode, setIsDarkMode] = useState(false);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(0);
   const itemsPerPage = 10;
@@ -79,7 +79,7 @@ export default function AdminDashboard() {
     getRole();
     fetchData();
     const saved = localStorage.getItem("rdo-theme");
-    if (saved) setIsDarkMode(saved === "dark");
+    setIsDarkMode(saved === "dark");
   }, [fetchData, supabase]);
 
   const toggleTheme = () => {
@@ -189,6 +189,7 @@ export default function AdminDashboard() {
                           log.action_type === 'LOGIN' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' :
                           log.action_type === 'LOGOUT' ? 'bg-zinc-500/10 text-zinc-500 border-zinc-500/20' :
                           log.action_type === 'RDO_EDIT' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' :
+                          log.action_type === 'RDO_DELETE' ? 'bg-rose-500/10 text-rose-500 border-rose-500/20' :
                           log.action_type === 'RDO_UPLOAD' ? 'bg-sky-500/10 text-sky-500 border-sky-500/20' :
                           'bg-zinc-500/10 text-zinc-500 border-zinc-500/20'
                         }`}>
@@ -201,7 +202,7 @@ export default function AdminDashboard() {
                       </td>
                       <td className="px-4 py-6">
                         <div className="text-xs text-zinc-400">
-                          {log.action_type === 'RDO_UPLOAD' || log.action_type === 'RDO_EDIT' ? (
+                          {log.action_type === 'RDO_UPLOAD' || log.action_type === 'RDO_EDIT' || log.action_type === 'RDO_DELETE' ? (
                             `CC ${log.details?.cc} | OS ${log.details?.os} | ${log.details?.photos_count} fotos`
                           ) : log.details?.method || 'N/A'}
                         </div>

@@ -19,7 +19,7 @@ interface HistoryItem {
   data: string;
   cc: string;
   os: string;
-  rdo_atividades: { wbs: string; descricao: string; fotos: number; urls?: string[]; editado?: boolean }[];
+  rdo_atividades: { id_atividade: string | number; wbs: string; descricao: string; fotos: number; urls?: string[]; editado?: boolean }[];
   totalFotos: number;
 }
 
@@ -73,11 +73,12 @@ export function MainScreen() {
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [status, setStatus] = useState<Status>({ kind: "idle" });
   const [optionsLoading, setOptionsLoading] = useState(true);
-  const [isDarkMode, setIsDarkMode] = useState(true);
+  const [isDarkMode, setIsDarkMode] = useState(false);
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [selectedHistoryItem, setSelectedHistoryItem] = useState<HistoryItem | null>(null);
   const [viewingPhotos, setViewingPhotos] = useState<string[] | null>(null);
+  const [deletingActivityId, setDeletingActivityId] = useState<string | number | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
@@ -87,9 +88,7 @@ export function MainScreen() {
   // Initialize theme from localStorage
   useEffect(() => {
     const savedTheme = localStorage.getItem("rdo-theme");
-    if (savedTheme === "light") {
-      setIsDarkMode(false);
-    }
+    setIsDarkMode(savedTheme === "dark");
   }, []);
 
   const toggleTheme = () => {
@@ -162,6 +161,35 @@ export function MainScreen() {
       setHistoryLoading(false);
     }
   }, []);
+
+  const deleteActivity = useCallback(async (activityId: string | number) => {
+    if (!confirm("Tem certeza que deseja excluir esta atividade e todas as fotos vinculadas?")) {
+      return;
+    }
+
+    setDeletingActivityId(activityId);
+    try {
+      const res = await fetch(`/api/rdo/activity/${activityId}`, { method: "DELETE" });
+      const json = (await res.json().catch(() => null)) as { error?: string } | null;
+
+      if (!res.ok) {
+        setStatus({
+          kind: "error",
+          message: `Erro ao excluir atividade: ${json?.error || "falha inesperada"}`,
+        });
+        return;
+      }
+
+      setStatus({ kind: "success", message: "Atividade excluida com sucesso." });
+      setSelectedHistoryItem(null);
+      await fetchHistory(currentPage);
+    } catch (error) {
+      console.error("Error deleting activity:", error);
+      setStatus({ kind: "error", message: "Erro inesperado ao excluir atividade." });
+    } finally {
+      setDeletingActivityId(null);
+    }
+  }, [currentPage, fetchHistory]);
 
   // Load initial options (CC and all Tasks) and History
   useEffect(() => {
@@ -897,7 +925,7 @@ export function MainScreen() {
                 <div className="flex flex-col gap-3">
                   {selectedHistoryItem.rdo_atividades?.map((atv, idx) => (
                     <div
-                      key={idx}
+                      key={atv.id_atividade || idx}
                       className={`flex flex-col gap-4 rounded-3xl border p-8 transition-colors ${isDarkMode ? "bg-zinc-800/40 border-zinc-700" : "bg-zinc-50 border-zinc-100"
                         }`}
                     >
@@ -910,10 +938,30 @@ export function MainScreen() {
                             </span>
                           )}
                         </div>
-                        <span className={`text-xs font-black uppercase tracking-widest px-3 py-1 rounded-lg ${isDarkMode ? "bg-zinc-900 text-zinc-500" : "bg-white text-zinc-400 border border-zinc-100"
-                          }`}>
-                          {atv.fotos} FOT.
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <span className={`text-xs font-black uppercase tracking-widest px-3 py-1 rounded-lg ${isDarkMode ? "bg-zinc-900 text-zinc-500" : "bg-white text-zinc-400 border border-zinc-100"
+                            }`}>
+                            {atv.fotos} FOT.
+                          </span>
+                          {isAdmin && (
+                            <button
+                              type="button"
+                              onClick={() => deleteActivity(atv.id_atividade)}
+                              disabled={deletingActivityId === atv.id_atividade}
+                              className={`flex h-9 w-9 items-center justify-center rounded-xl border transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 ${isDarkMode
+                                ? "border-rose-500/20 bg-rose-500/10 text-rose-400 hover:bg-rose-500/20"
+                                : "border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100"
+                                }`}
+                              title="Excluir atividade"
+                            >
+                              {deletingActivityId === atv.id_atividade ? (
+                                <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                              ) : (
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /><line x1="10" x2="10" y1="11" y2="17" /><line x1="14" x2="14" y1="11" y2="17" /></svg>
+                              )}
+                            </button>
+                          )}
+                        </div>
                       </div>
 
                       <p className={`text-lg font-medium leading-relaxed ${isDarkMode ? "text-zinc-300" : "text-zinc-600"}`}>
