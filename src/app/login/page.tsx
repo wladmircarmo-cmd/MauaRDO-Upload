@@ -22,7 +22,7 @@ const GoogleIcon = () => (
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(true);
+  const [isDarkMode, setIsDarkMode] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const supabase = createSupabaseBrowserClient();
 
@@ -62,11 +62,10 @@ export default function LoginPage() {
       <div className="absolute top-8 right-8">
         <button
           onClick={toggleTheme}
-          className={`p-2.5 rounded-xl border transition-all active:scale-95 ${
-            isDarkMode 
-            ? "bg-zinc-900 border-zinc-800 text-zinc-100 hover:bg-zinc-800" 
+          className={`p-2.5 rounded-xl border transition-all active:scale-95 ${isDarkMode
+            ? "bg-zinc-900 border-zinc-800 text-zinc-100 hover:bg-zinc-800"
             : "bg-white border-zinc-200 text-zinc-800 hover:bg-zinc-100 shadow-sm"
-          }`}
+            }`}
         >
           {isDarkMode ? <SunIcon /> : <MoonIcon />}
         </button>
@@ -76,12 +75,11 @@ export default function LoginPage() {
         <div className="space-y-8">
           <div className="mx-auto flex h-64 w-auto items-center justify-center">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img 
-              src="/images/logo.png" 
-              alt="Logo Mauá" 
-              className={`h-64 w-auto object-contain rounded-[2rem] border transition-all shadow-2xl ${
-                isDarkMode ? "border-zinc-800 shadow-blue-500/10" : "border-zinc-200 shadow-zinc-200/50"
-              }`}
+            <img
+              src="/images/logo.png"
+              alt="Logo Mauá"
+              className={`h-64 w-auto object-contain rounded-[2rem] border transition-all shadow-2xl ${isDarkMode ? "border-zinc-800 shadow-blue-500/10" : "border-zinc-200 shadow-zinc-200/50"
+                }`}
             />
           </div>
           <div className="space-y-4">
@@ -93,13 +91,12 @@ export default function LoginPage() {
         </div>
 
         {error && (
-          <div className={`-mt-8 p-6 rounded-3xl border animate-in zoom-in-95 duration-300 ${
-            isDarkMode 
-            ? "bg-rose-500/10 border-rose-500/20 text-rose-400" 
+          <div className={`-mt-8 p-6 rounded-3xl border animate-in zoom-in-95 duration-300 ${isDarkMode
+            ? "bg-rose-500/10 border-rose-500/20 text-rose-400"
             : "bg-rose-50 border-rose-200 text-rose-600"
-          }`}>
+            }`}>
             <div className="flex items-center justify-center gap-3 mb-2">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
               <span className="font-black uppercase tracking-widest text-sm">Acesso Negado</span>
             </div>
             <p className="font-medium text-lg leading-snug">
@@ -111,11 +108,10 @@ export default function LoginPage() {
         <button
           onClick={handleLogin}
           disabled={loading}
-          className={`group relative flex w-full items-center justify-center gap-6 rounded-[2rem] border px-12 py-8 text-2xl font-black transition-all active:scale-[0.98] disabled:opacity-50 ${
-            isDarkMode 
-            ? "bg-zinc-900 border-zinc-800 hover:bg-zinc-800 hover:border-zinc-700 shadow-2xl shadow-black/60" 
+          className={`group relative flex w-full items-center justify-center gap-6 rounded-[2rem] border px-12 py-8 text-2xl font-black transition-all active:scale-[0.98] disabled:opacity-50 ${isDarkMode
+            ? "bg-zinc-900 border-zinc-800 hover:bg-zinc-800 hover:border-zinc-700 shadow-2xl shadow-black/60"
             : "bg-white border-zinc-200 hover:bg-zinc-50 shadow-xl shadow-zinc-200/60"
-          }`}
+            }`}
         >
           {loading ? (
             <div className="h-10 w-10 animate-spin rounded-full border-4 border-zinc-400 border-t-transparent" />

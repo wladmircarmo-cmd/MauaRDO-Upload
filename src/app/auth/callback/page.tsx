@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 
@@ -13,9 +13,13 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 export default function CallbackPage() {
   const router = useRouter();
   const supabase = createSupabaseBrowserClient();
+  const hasHandledCallback = useRef(false);
 
   useEffect(() => {
     const handleCallback = async () => {
+      if (hasHandledCallback.current) return;
+      hasHandledCallback.current = true;
+
       const params = new URLSearchParams(window.location.search);
       const code = params.get("code");
       if (!code) {
@@ -37,9 +41,8 @@ export default function CallbackPage() {
 
   // Simple loading UI while processing.
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-zinc-950 text-zinc-50">
+    <div className="flex min-h-dvh items-center justify-center bg-zinc-50 text-zinc-900">
       <p className="text-lg font-medium">Finalizando login…</p>
     </div>
   );
 }
-

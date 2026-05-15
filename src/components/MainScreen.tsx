@@ -118,7 +118,7 @@ export function MainScreen() {
           .select('role')
           .eq('email', user.email)
           .maybeSingle();
-        
+
         if (authUser) {
           setUserRole(authUser.role);
         } else {
@@ -607,7 +607,7 @@ export function MainScreen() {
                   </div>
                 );
               }
-              
+
               if (!canWrite) return null;
 
               return (
