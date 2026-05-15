@@ -84,8 +84,7 @@ export function MainScreen() {
   const [cc, setCc] = useState<string>("");
   const [ccOptions, setCcOptions] = useState<CCItem[]>([]);
   const [os, setOs] = useState<string>("");
-  const [date, setDate] = useState<string>(new Date().toISOString().split("T")[0]);
-  const [dateFilterType, setDateFilterType] = useState<'active' | 'start' | 'end'>('active');
+  const [date] = useState<string>(new Date().toISOString().split("T")[0]);
   const [selectedTaskId, setSelectedTaskId] = useState<string | number>("");
   const [wbsList, setWbsList] = useState<MauaTask[]>([]);
   const [wbsLoading, setWbsLoading] = useState(false);
@@ -243,8 +242,8 @@ export function MainScreen() {
     async function init() {
       try {
         setOptionsLoading(true);
-        // Load CCs with date filter and type
-        const optRes = await fetch(`/api/options?date=${date}&type=${dateFilterType}`);
+        // Load CCs selected in the admin dashboard
+        const optRes = await fetch(`/api/options`);
         if (optRes.ok) {
           const data = await optRes.json();
           setCcOptions(data.ccs || []);
@@ -267,7 +266,7 @@ export function MainScreen() {
       }
     }
     init();
-  }, [fetchHistory, date, dateFilterType, cc]);
+  }, [fetchHistory, cc]);
 
   // Load Tasks when CC changes
   useEffect(() => {
@@ -586,7 +585,7 @@ export function MainScreen() {
         </section> */}
 
 
-        <section className={`grid grid-cols-2 gap-4 rounded-3xl border p-4 transition-colors ${isDarkMode ? "border-zinc-800 bg-zinc-950/60" : "border-zinc-200 bg-white shadow-lg shadow-zinc-200/20"}`}>
+        <section className={`rounded-3xl border p-4 transition-colors ${isDarkMode ? "border-zinc-800 bg-zinc-950/60" : "border-zinc-200 bg-white shadow-lg shadow-zinc-200/20"}`}>
           <div className="flex flex-col gap-1">
             <div className="flex items-center min-h-[32px]">
               <label className={`text-xs font-black uppercase tracking-widest ${isDarkMode ? "text-zinc-400" : "text-[#364B59]"}`}>CC (Centro de Custo)</label>
@@ -609,38 +608,6 @@ export function MainScreen() {
                 ))
               )}
             </select>
-          </div>
-          <div className="flex flex-col gap-1">
-            <div className="flex items-center justify-between min-h-[32px]">
-              <label className={`text-xs font-black uppercase tracking-widest ${isDarkMode ? "text-zinc-400" : "text-[#364B59]"}`}>DATA</label>
-              <div className="flex gap-2">
-                {[
-                  { id: 'active', label: 'Vigentes' },
-                  { id: 'start', label: 'Início' },
-                  { id: 'end', label: 'Fim' }
-                ].map((type) => (
-                  <button
-                    key={type.id}
-                    onClick={() => setDateFilterType(type.id as 'active' | 'start' | 'end')}
-                    className={`px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-lg border transition-all ${dateFilterType === type.id
-                      ? "bg-[#364B59] border-[#364B59] text-white shadow-lg shadow-[#364B59]/20"
-                      : isDarkMode ? "bg-zinc-900 border-zinc-700 text-zinc-400 hover:bg-zinc-800" : "bg-zinc-100 border-zinc-200 text-zinc-500 hover:bg-zinc-200"
-                      }`}
-                  >
-                    {type.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <input
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className={`w-full rounded-2xl border px-5 py-4 text-xl font-bold outline-none focus:border-[#364B59] transition-all focus:ring-4 focus:ring-[#364B59]/10 ${isDarkMode
-                ? "border-zinc-700 bg-zinc-950 text-zinc-100"
-                : "border-zinc-200 bg-zinc-50 text-zinc-900"
-                }`}
-            />
           </div>
         </section>
 

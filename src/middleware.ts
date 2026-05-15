@@ -14,6 +14,7 @@ export async function middleware(request: NextRequest) {
   const isLoginPage = request.nextUrl.pathname === '/login'
   const isAuthPage = request.nextUrl.pathname.startsWith('/auth')
   const isConsultaPage = request.nextUrl.pathname.startsWith('/consulta')
+  const isApiRoute = request.nextUrl.pathname.startsWith('/api/')
 
   if (!user && !isLoginPage && !isAuthPage) {
     const url = request.nextUrl.clone()
@@ -70,7 +71,7 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(url)
     }
 
-    if (userRole === 'consulta' && !isLoginPage && !isConsultaPage) {
+    if (userRole === 'consulta' && !isLoginPage && !isConsultaPage && !isApiRoute) {
       const url = request.nextUrl.clone()
       url.pathname = '/consulta'
       return NextResponse.redirect(url)

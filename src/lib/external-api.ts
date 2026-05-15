@@ -30,6 +30,7 @@ export interface CCItem {
   data_inicio?: string | null;
   data_fim?: string | null;
   status?: string | null;
+  show_in_app?: boolean | null;
   [key: string]: unknown;
 }
 
@@ -60,6 +61,7 @@ interface ExternalCcRow {
   data_cadastro: string | null;
   data_inicio: string | null;
   data_fim: string | null;
+  show_in_app: boolean | null;
   raw_data?: Record<string, unknown>;
 }
 
@@ -159,27 +161,18 @@ function extractWbs(eapData: EapApiResponse): ExternalWbsItem[] {
   return eapData.wbs || (Array.isArray(eapData) ? (eapData as ExternalWbsItem[]) : []) || [];
 }
 
-function filterCcs(ccs: CCItem[], filterDate?: string, dateType?: "start" | "end" | "active") {
+function filterCcs(
+  ccs: CCItem[],
+  _filterDate?: string,
+  _dateType?: "start" | "end" | "active",
+  requireVisible = true,
+) {
   const uniqueCcs = uniqueBy(ccs, (cc) => toText(cc.cod_ccusto));
 
   return uniqueCcs.filter((cc): cc is CCItem => {
     if (!cc) return false;
-    if (cc.status !== "Em Progresso") return false;
-
-    if (filterDate) {
-      const selected = filterDate;
-      const start = toDateText(cc.data_inicio);
-      const end = toDateText(cc.data_fim);
-
-      if (dateType === "start") return start === selected;
-      if (dateType === "end") return end === selected;
-      if (start && selected < start) return false;
-      if (end && selected > end) return false;
-    } else {
-      if (!cc.data_cadastro) return false;
-      const startDate = new Date(cc.data_cadastro as string);
-      const cutoffDate = new Date("2026-01-01");
-      if (startDate <= cutoffDate) return false;
+    if (requireVisible && (cc.show_in_app === false || cc.show_in_app === null || cc.show_in_app === undefined)) {
+      return false;
     }
 
     return true;
@@ -258,6 +251,7 @@ async function getCachedOptions(
     data_inicio: cc.data_inicio,
     data_fim: cc.data_fim,
     status: cc.status,
+    show_in_app: cc.show_in_app,
     ...(cc.raw_data || {}),
   }));
 
@@ -266,7 +260,7 @@ async function getCachedOptions(
   ).sort() as string[];
 
   return {
-    ccs: filterCcs(cachedCcs, filterDate, dateType),
+    ccs: filterCcs(cachedCcs, filterDate, dateType, true),
     oss: cachedOss,
     hasCache: cachedCcs.length > 0 || cachedOss.length > 0,
   };
@@ -279,7 +273,7 @@ export async function fetchExternalWbsListFromApi(): Promise<ExternalWbsItem[]> 
 
 export async function fetchExternalOptionsFromApi(filterDate?: string, dateType?: "start" | "end" | "active") {
   const [ccData, eapData] = await Promise.all([fetchFromCcAPI(), fetchFromEapAPI()]);
-  const ccs = filterCcs(extractCcs(ccData), filterDate, dateType);
+  const ccs = filterCcs(extractCcs(ccData), filterDate, dateType, false);
   const oss = extractOss(eapData);
 
   return { ccs, oss };

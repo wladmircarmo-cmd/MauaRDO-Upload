@@ -522,22 +522,22 @@ export default function ConsultaPage() {
                 <article
                   key={item.id}
                   onClick={() => setExpandedOsId((current) => current === item.id ? null : item.id)}
-                  className={`flex cursor-pointer flex-col gap-3 rounded-3xl border p-4 shadow-sm transition-all ${isDarkMode ? "border-zinc-800 bg-zinc-900/50 hover:border-zinc-700 hover:bg-zinc-900" : "border-zinc-100 bg-zinc-50 hover:border-zinc-200 hover:bg-white hover:shadow-md"}`}
+                  className={`flex cursor-pointer flex-col gap-3 rounded-3xl border p-4 shadow-sm transition-all ${isDarkMode ? "border-zinc-700 bg-zinc-900/70 shadow-black/20 hover:border-zinc-600 hover:bg-zinc-900" : "border-zinc-300 bg-[#fbfbfb] shadow-[0_8px_20px_rgba(15,23,42,0.10)] hover:border-[#364B59]/40 hover:bg-white hover:shadow-[0_14px_28px_rgba(15,23,42,0.14)]"}`}
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex flex-col gap-2">
                       <div className="flex flex-wrap items-center gap-3">
                         <span className="text-xs font-black uppercase tracking-widest text-[#364B59]">CC {item.cc}</span>
-                        <span className={`rounded-lg px-2 py-1 text-[10px] font-black uppercase tracking-widest ${item.hasLaunch ? (isDarkMode ? "bg-emerald-500/10 text-emerald-400" : "bg-emerald-50 text-emerald-600") : (isDarkMode ? "bg-zinc-800 text-zinc-500" : "bg-zinc-100 text-zinc-400")}`}>
+                        <span className={`rounded-lg px-2 py-1 text-[10px] font-black uppercase tracking-widest ${item.hasLaunch ? (isDarkMode ? "bg-emerald-500/10 text-emerald-300" : "bg-emerald-100 text-emerald-700") : (isDarkMode ? "bg-zinc-800 text-zinc-300" : "bg-zinc-200 text-zinc-600")}`}>
                           {item.hasLaunch ? "Com lançamento" : "Sem lançamento"}
                         </span>
                       </div>
                       <h3 className={`text-lg font-black tracking-tight ${isDarkMode ? "text-zinc-100" : "text-zinc-900"}`}>OS {item.os}</h3>
                       {item.descrOs && (
-                        <p className={`text-xs font-bold ${isDarkMode ? "text-zinc-400" : "text-zinc-500"}`}>{item.descrOs}</p>
+                        <p className={`text-xs font-bold ${isDarkMode ? "text-zinc-300" : "text-zinc-700"}`}>{item.descrOs}</p>
                       )}
                     </div>
-                    <div className={`flex items-center gap-2 rounded-xl border px-4 py-2 ${isDarkMode ? "border-zinc-800 bg-zinc-950 text-zinc-300" : "border-zinc-100 bg-white text-[#364B59]"}`}>
+                    <div className={`flex items-center gap-2 rounded-xl border px-4 py-2 shadow-sm ${isDarkMode ? "border-zinc-700 bg-zinc-950 text-zinc-100" : "border-zinc-200 bg-zinc-50 text-[#364B59]"}`}>
                       <span className="text-sm font-black">{item.hasLaunch ? 1 : 0}</span>
                       <span className="text-[10px] font-black uppercase tracking-widest">RDOs</span>
                     </div>
@@ -548,14 +548,14 @@ export default function ConsultaPage() {
                       item.rdo_atividades.map((atv) => (
                         <span
                           key={atv.id_atividade}
-                          className={`inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 text-[11px] font-black uppercase tracking-tighter ${isDarkMode ? "border-zinc-700 bg-zinc-800 text-zinc-400" : "border-zinc-200 bg-zinc-100 text-zinc-500"}`}
+                          className={`inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 text-[11px] font-black uppercase tracking-tighter ${isDarkMode ? "border-zinc-600 bg-zinc-800 text-zinc-300" : "border-zinc-300 bg-zinc-100 text-zinc-700"}`}
                         >
                           {atv.wbs}
                           {atv.editado && <span className="h-1.5 w-1.5 rounded-full bg-[#F18213] shadow-[0_0_8px_rgba(241,130,19,0.5)]" />}
                         </span>
                       ))
                     ) : (
-                      <span className={`inline-flex items-center rounded-lg border border-dashed px-3 py-1.5 text-[11px] font-black uppercase tracking-widest ${isDarkMode ? "border-zinc-700 bg-zinc-950 text-zinc-500" : "border-zinc-200 bg-white text-zinc-400"}`}>
+                      <span className={`inline-flex items-center rounded-lg border border-dashed px-3 py-1.5 text-[11px] font-black uppercase tracking-widest ${isDarkMode ? "border-zinc-600 bg-zinc-950 text-zinc-300" : "border-zinc-300 bg-zinc-50 text-zinc-600"}`}>
                         {item.taskCount} atividades disponiveis
                       </span>
                     )}
